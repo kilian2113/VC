@@ -10,7 +10,8 @@ Dentro de los bucles utilizamos condiciones para determinar qué cuadrados deben
 dependiendo de si la fila es par o impar, se establece el color correspondiente a cada cudrado. Cuando se cumple la condición, se modifica el bloque de 100 × 100 píxeles 
 correspondiente, estableciendo sus valores a 255 (blanco).
 
-<img width="426" height="418" alt="image" src="https://github.com/user-attachments/assets/9794451e-82be-4a80-ae96-3f2a2303bf9c" />
+<img width="426" height="418" alt="image" src="https://github.com/user-attachments/assets/303304b3-b7c8-4fa0-b10c-deb8a4319ad3" />
+
 
 
 ## **TAREA 2**
@@ -21,7 +22,8 @@ el valor de los tres canales a 255.
 Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de OpenCV. También utilizamos *line()* 
 para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
 
-<img width="364" height="417" alt="image" src="https://github.com/user-attachments/assets/40f89871-9516-4012-bbc5-1c3403f2d12d" />
+<img width="328" height="389" alt="image" src="https://github.com/user-attachments/assets/dbab869d-97f8-475b-a412-f95a0eda78ba" />
+
 
 ## **TAREA 3**
 ### **Enunciado:** Pintar círculos en las posiciones del píxel más claro y oscuro de cada fotograma captado por la cámara. ¿Funciona de forma fluida o a saltos? En el segundo caso, ¿podrías acelerarlo?Si haces uso de herramientas de IA, incluye la conversación.
