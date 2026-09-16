@@ -4,10 +4,10 @@
 ### **Enunciado:** Sin herramientas de IA, crea una imagen, p.e. de 800x800 píxeles, con la textura del tablero de ajedrez. Una vez resuelto de forma manual, resuelve la misma tarea usando un asistente de IA de tu elección (Claude, ChatGPT, Copilot, etc.). Compara ambas versiones en el informe de la práctica
 
 Para esta tarea hemos creado una imagen de resolución 800 × 800 píxeles. Para generar el tablero recorremos la imagen mediante dos bucles 
-anidados, utilizando saltos de 100 píxeles para evitar realizar iteraciones innecesarias.
+anidados, utilizando saltos de 100 píxeles en las filas y de 200 píxeles en las columnas para evitar realizar iteraciones innecesarias.
 
 Dentro de los bucles utilizamos condiciones para determinar qué cuadrados deben ser blancos y cuáles negros. De esta forma, 
-dependiendo de si la fila y la columna son pares o impares, se establece el color correspondiente. Cuando se cumple la condición, se modifica el bloque de 100 × 100 píxeles 
+dependiendo de si la fila es par o impar, se establece el color correspondiente a cada cudrado. Cuando se cumple la condición, se modifica el bloque de 100 × 100 píxeles 
 correspondiente, estableciendo sus valores a 255 (blanco).
 
 <img width="426" height="418" alt="image" src="https://github.com/user-attachments/assets/9794451e-82be-4a80-ae96-3f2a2303bf9c" />
