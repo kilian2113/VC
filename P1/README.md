@@ -10,6 +10,8 @@ Dentro de los bucles utilizamos condiciones para determinar qué cuadrados deben
 dependiendo de si la fila es par o impar, se establece el color correspondiente a cada cudrado. Cuando se cumple la condición, se modifica el bloque de 100 × 100 píxeles 
 correspondiente, estableciendo sus valores a 255 (blanco).
 
+En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo directamente las 8 filas y 8 columnas del tablero. El tamaño de cada casilla se calcula automáticamente a partir de las dimensiones de la imagen y el número de casillas. Para alternar los colores se comprueba si la suma de la fila y la columna es par o impar, y finalmente se utiliza *rectangle()* de OpenCV para dibujar cada casilla.
+
 <img width="426" height="418" alt="image" src="https://github.com/user-attachments/assets/303304b3-b7c8-4fa0-b10c-deb8a4319ad3" />
 
 
@@ -19,8 +21,6 @@ correspondiente, estableciendo sus valores a 255 (blanco).
 Para crear la imagen con estilo Mondrian comenzamos creando una imagen negra de 3 canales, que posteriormente transformamos en blanca estableciendo el valor de los tres canales a 255.
 
 Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de OpenCV. También utilizamos *line()* para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
-
-En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo directamente las 8 filas y 8 columnas del tablero. El tamaño de cada casilla se calcula automáticamente a partir de las dimensiones de la imagen y el número de casillas. Para alternar los colores se comprueba si la suma de la fila y la columna es par o impar, y finalmente se utiliza *rectangle()* de OpenCV para dibujar cada casilla.
 
 <img width="328" height="389" alt="image" src="https://github.com/user-attachments/assets/dbab869d-97f8-475b-a412-f95a0eda78ba" />
 
