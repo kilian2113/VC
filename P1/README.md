@@ -38,6 +38,16 @@ Esta segunda implementación presenta un funcionamiento más fluido, principalme
 
 ## **TAREA 4**
 ### **Enunciado:** Llevar a cabo una propuesta propia de pop art. Incluye fuentes consultadas. Si haces uso de herramientas de IA, incluye la conversación.
+Para realizar esta tarea hemos creado una composición de estilo Pop Art formada por cuatro versiones diferentes del vídeo de la cámara web. Primero obtenemos las dimensiones de la cámara y reducimos la resolución a la mitad para que la composición ocupe menos espacio en pantalla. Después creamos una imagen conjunta dividida en cuatro planos.
+
+En el plano de arriba a la izquierda dividimos la imagen en cuatro cuadrados y aplicamos diferentes combinaciones de los canales RGB, utilizando tanto los valores originales como sus valores invertidos.
+
+En el plano de arriba a la derecha combinamos los canales de color de la imagen original y utilizamos la función *flip()* de OpenCV para invertir horizontalmente uno de los canales, creando un reflejo.
+
+En el plano de abajo a la izquierda realizamos otra combinación de los canales de color, invirtiendo el canal azul. Además, utilizamos *circle()* de OpenCV para dibujar una serie de círculos alrededor de los bordes de la imagen, creando un marco decorativo.
+
+Por último, en el plano de abajo a la derecha recorremos todos los píxeles de la imagen y calculamos la diferencia entre sus coordenadas horizontal y vertical (`x-y`). Dependiendo del resultado, cada píxel pertenece a una de las tres bandas diagonales definidas mediante diferentes valores límite. A cada banda diagonal se le aplica una combinación de colores diferente.
+
 
 #### *Bilbliografía*
 - https://docs.opencv.org/3.4.20/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
