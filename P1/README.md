@@ -10,7 +10,7 @@ Dentro de los bucles utilizamos condiciones para determinar qué cuadrados deben
 dependiendo de si la fila es par o impar, se establece el color correspondiente a cada cudrado. Cuando se cumple la condición, se modifica el bloque de 100 × 100 píxeles 
 correspondiente, estableciendo sus valores a 255 (blanco).
 
-En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo directamente las 8 filas y 8 columnas del tablero. El tamaño de cada casilla se calcula automáticamente a partir de las dimensiones de la imagen y el número de casillas. Para alternar los colores se comprueba si la suma de la fila y la columna es par o impar, y finalmente se utiliza *rectangle()* de OpenCV para dibujar cada casilla.
+En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo directamente las 8 filas y 8 columnas del tablero. El tamaño de cada casilla se calcula automáticamente a partir de las dimensiones de la imagen y el número de casillas. Para alternar los colores se comprueba si la suma de la fila y la columna es par o impar, y finalmente se utiliza *rectangle()* de *OpenCV* para dibujar cada casilla.
 
 <img width="426" height="418" alt="image" src="https://github.com/user-attachments/assets/303304b3-b7c8-4fa0-b10c-deb8a4319ad3" />
 
@@ -42,9 +42,9 @@ Para realizar esta tarea hemos creado una composición de estilo Pop Art formada
 
 En el plano de arriba a la izquierda dividimos la imagen en cuatro cuadrados y aplicamos diferentes combinaciones de los canales RGB, utilizando tanto los valores originales como sus valores invertidos.
 
-En el plano de arriba a la derecha combinamos los canales de color de la imagen original y utilizamos la función *flip()* de OpenCV para invertir horizontalmente uno de los canales, creando un reflejo.
+En el plano de arriba a la derecha combinamos los canales de color de la imagen original y utilizamos la función *flip()* de *OpenCV* para invertir horizontalmente uno de los canales, creando un reflejo.
 
-En el plano de abajo a la izquierda realizamos otra combinación de los canales de color, invirtiendo el canal azul. Además, utilizamos *circle()* de OpenCV para dibujar una serie de círculos alrededor de los bordes de la imagen, creando un marco decorativo.
+En el plano de abajo a la izquierda realizamos otra combinación de los canales de color, invirtiendo el canal azul. Además, utilizamos *circle()* de *OpenCV* para dibujar una serie de círculos alrededor de los bordes de la imagen, creando un marco decorativo.
 
 Por último, en el plano de abajo a la derecha recorremos todos los píxeles de la imagen y calculamos la diferencia entre sus coordenadas horizontal y vertical (`x-y`). Dependiendo del resultado, cada píxel pertenece a una de las tres bandas diagonales definidas mediante diferentes valores límite. A cada banda diagonal se le aplica una combinación de colores diferente.
 
