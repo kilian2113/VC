@@ -20,7 +20,7 @@ En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo d
 ### **Enunciado:** Crear una imagen estilo Mondrian (un ejemplo https://www3.gobiernodecanarias.org/medusa/ecoescuela/sa/2017/04/17/descubriendo-a-mondrian/) con las funciones de dibujo de OpenCV. No hagas uso de herramientas de IA, parte del ejemplo anterior.
 Para crear la imagen con estilo Mondrian comenzamos creando una imagen negra de 3 canales, que posteriormente transformamos en blanca estableciendo el valor de los tres canales a 255.
 
-Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de OpenCV. También utilizamos *line()* para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
+Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de *OpenCV*. También utilizamos *line()* para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
 
 <img width="328" height="389" alt="image" src="https://github.com/user-attachments/assets/dbab869d-97f8-475b-a412-f95a0eda78ba" />
 
@@ -47,6 +47,8 @@ En el plano de arriba a la derecha combinamos los canales de color de la imagen 
 En el plano de abajo a la izquierda realizamos otra combinación de los canales de color, invirtiendo el canal azul. Además, utilizamos *circle()* de *OpenCV* para dibujar una serie de círculos alrededor de los bordes de la imagen, creando un marco decorativo.
 
 Por último, en el plano de abajo a la derecha recorremos todos los píxeles de la imagen y calculamos la diferencia entre sus coordenadas horizontal y vertical (`x-y`). Dependiendo del resultado, cada píxel pertenece a una de las tres bandas diagonales definidas mediante diferentes valores límite. A cada banda diagonal se le aplica una combinación de colores diferente.
+
+<img width="798" height="633" alt="image" src="https://github.com/user-attachments/assets/d74f4ff4-8ed9-4ad5-a0ab-b1205f88bba8" />
 
 
 #### *Bilbliografía*
