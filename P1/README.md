@@ -16,11 +16,11 @@ correspondiente, estableciendo sus valores a 255 (blanco).
 
 ## **TAREA 2**
 ### **Enunciado:** Crear una imagen estilo Mondrian (un ejemplo https://www3.gobiernodecanarias.org/medusa/ecoescuela/sa/2017/04/17/descubriendo-a-mondrian/) con las funciones de dibujo de OpenCV. No hagas uso de herramientas de IA, parte del ejemplo anterior.
-Para crear la imagen con estilo Mondrian comenzamos creando una imagen negra de 3 canales, que posteriormente transformamos en blanca estableciendo 
-el valor de los tres canales a 255.
+Para crear la imagen con estilo Mondrian comenzamos creando una imagen negra de 3 canales, que posteriormente transformamos en blanca estableciendo el valor de los tres canales a 255.
 
-Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de OpenCV. También utilizamos *line()* 
-para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
+Sobre este fondo blanco comenzamos a realizar rectángulos de diferentes tamaños y colores utilizando la función *rectangle()* de OpenCV. También utilizamos *line()* para trazar líneas de diferentes grosores y separar las distintas zonas de la composición.
+
+En la versión hecha con IA se utiliza un planteamiento diferente, recorriendo directamente las 8 filas y 8 columnas del tablero. El tamaño de cada casilla se calcula automáticamente a partir de las dimensiones de la imagen y el número de casillas. Para alternar los colores se comprueba si la suma de la fila y la columna es par o impar, y finalmente se utiliza *rectangle()* de OpenCV para dibujar cada casilla.
 
 <img width="328" height="389" alt="image" src="https://github.com/user-attachments/assets/dbab869d-97f8-475b-a412-f95a0eda78ba" />
 
@@ -52,5 +52,6 @@ Por último, en el plano de abajo a la derecha recorremos todos los píxeles de 
 #### *Bilbliografía*
 - https://docs.opencv.org/3.4.20/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
 - https://docs.opencv.org/3.4.20/d4/dc6/tutorial_py_template_matching.html
+- https://chatgpt.com/share/6aaa60e4-7ac8-83eb-b346-8fe68bd3df8c 
 
 **Autores:** Alicia María Rodríguez Trujillo y Kilian Santana Delgado
