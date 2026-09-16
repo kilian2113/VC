@@ -26,6 +26,14 @@ para trazar líneas de diferentes grosores y separar las distintas zonas de la c
 ## **TAREA 3**
 ### **Enunciado:** Pintar círculos en las posiciones del píxel más claro y oscuro de cada fotograma captado por la cámara. ¿Funciona de forma fluida o a saltos? En el segundo caso, ¿podrías acelerarlo?Si haces uso de herramientas de IA, incluye la conversación.
 
+Para esta tarea hemos desarrollado dos versiones. En la primera, recorremos la imagen mediante dos bucles anidados y, para cada píxel, calculamos la suma de los tres canales. A partir de este valor, vamos registrando el píxel con el valor máximo y mínimo, junto con sus coordenadas.
+
+Esta primera implementación resulta algo pesada e ineficiente, provocando pequeños saltos en la imagen debido a que se recorren todos los píxeles del frame y procesan sus tres canales. Por este motivo, desarrollamos una segunda versión utilizando funciones propias de *OpenCV*.
+
+En esta segunda implementación, convertimos el frame capturado a escala de grises de un solo canal mediante la función *cvtColor()*, utilizando el parámetro **COLOR_BGR2GRAY**. A continuación, aplicamos sobre el nuevo frame la función *minMaxLoc()*, que nos da directamente los valores mínimo y máximo de los píxeles, así como sus coordenadas. Finalmente, al igual que en la primera versión, dibujamos un círculo sobre las coordenadas de ambos píxeles.
+
+Esta segunda implementación presenta un funcionamiento más fluido, principalmente porque no es necesario recorrer manualmente todo el frame ni procesar cada uno de sus canales. En su lugar, utilizamos funciones de *OpenCV* que están optimizadas para este tipo de operaciones.
+
 ## **TAREA 4**
 ### **Enunciado:** Llevar a cabo una propuesta propia de pop art. Incluye fuentes consultadas. Si haces uso de herramientas de IA, incluye la conversación.
 
@@ -33,4 +41,4 @@ para trazar líneas de diferentes grosores y separar las distintas zonas de la c
 - https://docs.opencv.org/3.4.20/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
 - https://docs.opencv.org/3.4.20/d4/dc6/tutorial_py_template_matching.html
 
-**Autores:** Alicia María Rodríguez Trujillo y Kilian Santana
+**Autores:** Alicia María Rodríguez Trujillo y Kilian Santana Delgado
