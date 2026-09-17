@@ -18,3 +18,4 @@ Grado Ingeniería Informática
 ## Prácticas
 
 - [Práctica 1](./P1)
+- [Práctica 2](./P2)
