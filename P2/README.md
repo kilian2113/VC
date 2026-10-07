@@ -73,7 +73,7 @@ https://github.com/user-attachments/assets/0716f7d7-24cd-4d62-88f4-0d9c67256a4f
 
 
 ## **TAREA EXTRA**
-Como extensión a la tarea de detección de movimiento, hemos hecho pizarra virtual. Para aislar el movimiento en pantalla, partimos de la base de la Tarea 3: cálculo de la diferencia entre fotogramas consecutivos, suavizado y generación de una máscara binaria.
+Como extensión a la tarea de detección de movimiento, hemos hecho una pizarra virtual. Para aislar el movimiento en pantalla, partimos de la base de la Tarea 3: cálculo de la diferencia entre fotogramas consecutivos, suavizado y generación de una máscara binaria.
 
 Con respecto a la detección del centro de movimiento, en lugar de localizar individualmente todos los píxeles blancos y calcular su media, hemos optimizado el proceso empleando la función **moments()** de OpenCV. Esta función calcula los momentos espaciales de la imagen binaria, lo que nos permite extraer directamente el área total del movimiento (mediante el parámetro *m00*) y las coordenadas de su centroide (*cx* y *cy*).
 
@@ -86,6 +86,7 @@ Finalmente, para evitar que los trazos pinten la pantalla de forma permanente y 
 #### *Bilbliografía*
 - https://shimat.github.io/opencvsharp_docs/html/7bb05237-7ff6-0e19-bfeb-36ea352b3051.htm
 - https://chatgpt.com/share/6ac57af8-7bcc-83ed-889f-f82caf43c5f5
+- https://sbirchfield.github.io/cvintro/lessons/lesson05_moments.html 
 
 **Autores**: 
 [Alicia María Rodríguez Trujillo](https://github.com/AliciaM05) y 
