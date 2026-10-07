@@ -16,7 +16,8 @@ Con el objetivo de mantener un código limpio y reutilizable para la siguiente t
 
 En el bloque principal del programa, llamamos a estas funciones de forma secuencial.
 
-<img width="516" height="454" alt="img1" src="https://github.com/user-attachments/assets/f111d998-4fe8-4cdd-8fc8-33410d6ff649" />
+<img width="516" height="455" alt="resultado canny" src="https://github.com/user-attachments/assets/f1a53aeb-ee72-4b3d-8730-83d6a83d53ce" />
+
 
 
 ## **TAREA 2**
@@ -34,9 +35,10 @@ En el bloque principal del programa, mostramos una comparativa inicial entre la 
 
 Finalmente, hacemos uso de **show_full_result()** para generar la visualización final. Esta nos permite desplegar dos ventanas independientes: una dedicada al análisis horizontal (filas) y otra al vertical (columnas), mostrando en cada una la imagen con sus respectivas marcas y la gráfica con la línea del umbral.
 
-<img width="340" height="187" alt="comparación imagen umbralizada y sin umbralizar" src="https://github.com/user-attachments/assets/8c34a687-abb2-419d-9154-26d89d7a18e2" />
-<img width="516" height="454" alt="resultado sobel columnas" src="https://github.com/user-attachments/assets/4e365ddd-3202-4c2d-ac03-0380c1f4189b" />
-<img width="516" height="454" alt="resultado sobel filas" src="https://github.com/user-attachments/assets/e66b0605-9bba-46f7-8cc5-3e3e8b8d05d5" />
+<img width="340" height="187" alt="2" src="https://github.com/user-attachments/assets/2ba512f1-2e90-408d-bdc1-a17b36eec3e1" /> 
+<br><br>
+<img width="516" height="455" alt="4" src="https://github.com/user-attachments/assets/c28a142d-37e1-4af9-9a2e-60ebd9ae7bb7" />
+<img width="529" height="455" alt="3" src="https://github.com/user-attachments/assets/85fba55d-0573-42f2-bd46-3f7cbaf435a7" />
 
 
 #### **Comparación entre Canny y Sobel**
@@ -48,9 +50,7 @@ La combinación de tener bordes más gruesos en la imagen original y un valor de
 
 Finalmente, esto explica la diferencia en la visualización de los resultados. En la imagen de Canny, al haber menos filas que superan el umbral, las líneas rojas se dibujan de manera más aislada. En la imagen de Sobel, al cumplirse la condición en múltiples filas consecutivas, las líneas se dibujan unas junto a otras, creando el efecto visual de bandas horizontales rojas mucho más gruesas.
 
-<img width="516" height="454" alt="resultado canny filas" src="https://github.com/user-attachments/assets/9c6a2988-7b97-491a-bcbf-2ed3030ef79a" />
-<img width="516" height="454" alt="resultado sobel filas" src="https://github.com/user-attachments/assets/1e2cf3af-6771-42fa-8247-e274bf23f175" />
-
+| <img width="450" alt="output" src="https://github.com/user-attachments/assets/efa20ded-802a-4f70-8154-7c5db7b96a85" /> | <img width="450" alt="4" src="https://github.com/user-attachments/assets/73a9b50f-0035-4dc7-ad38-b566d22b41aa" /> |
 
 
 ## **TAREA 3**
@@ -80,6 +80,10 @@ Con respecto a la detección del centro de movimiento, en lugar de localizar ind
 Para generar el trazo en el aire, almacenamos dinámicamente estas coordenadas en una lista llamada *path*. En cada iteración del fotograma, un bucle recorre este historial y utiliza la función **line()** para conectar cada punto con su posición inmediatamente anterior, dibujando así el recorrido del movimiento. La punta del "pincel" se indica visualmente con un círculo rojo empleando la función **circle()**.
 
 Finalmente, para evitar que los trazos pinten la pantalla de forma permanente y se sature la imagen, se ha establecido un límite de almacenamiento con *MAX_POINT*. Una vez alcanzado este límite, elimina la coordenada más antigua de la lista con la instrucción **pop(0)**. Esto genera un efecto visual de estela que se va borrando de forma progresiva conforme el usuario se mueve.
+
+
+https://github.com/user-attachments/assets/012922c8-3497-4d92-a872-eb0cb1db94b2
+
 
 
 
