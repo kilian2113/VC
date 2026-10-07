@@ -32,6 +32,15 @@ En el bloque principal del programa, mostramos una comparativa inicial entre la 
 
 Finalmente, hacemos uso de **show_full_result()** para generar la visualización final. Esta nos permite desplegar dos ventanas independientes: una dedicada al análisis horizontal (filas) y otra al vertical (columnas), mostrando en cada una la imagen con sus respectivas marcas y la gráfica con la línea del umbral.
 
+#### **Comparación entre Canny y Sobel**
+Al comparar visualmente las imágenes binarias base, se observa que el método de Canny genera bordes muy finos y definidos, habitualmente de un solo píxel de grosor. Esto se debe a que su algoritmo incluye internamente una etapa matemática llamada "supresión de no máximos", diseñada específicamente para adelgazar los contornos. Por el contrario, la imagen procesada con el operador de Sobel presenta áreas blancas y bordes mucho más marcados y gruesos. Sobel calcula la magnitud del gradiente (los cambios de intensidad), y al aplicarle un umbralizado binario manual con un valor de 100, cualquier píxel cercano al borde que supere ese valor se convierte en blanco. Esto provoca que múltiples píxeles adyacentes se activen, haciendo más gruesa la línea.   
+
+Esta diferencia inicial en el grosor de los bordes determina el resto de los resultados. Al realizar el conteo de píxeles blancos por fila, aunque ambas gráficas presentan una forma y distribución visualmente casi idéntica, los valores matemáticos difieren. Como el umbral se calcula dinámicamente como el 90% del valor máximo de cada gráfica, este se ajusta a 0.39 para Canny y a 0.38 para Sobel.
+
+La combinación de tener bordes más gruesos en la imagen original y un valor de umbral distinto provoca que el número de filas que superan el límite sea significativamente mayor en Sobel (19 filas) que en Canny (7 filas).
+
+Finalmente, esto explica la diferencia en la visualización de los resultados. En la imagen de Canny, al haber menos filas que superan el umbral, las líneas rojas se dibujan de manera más aislada. En la imagen de Sobel, al cumplirse la condición en múltiples filas consecutivas, las líneas se dibujan unas junto a otras, creando el efecto visual de bandas horizontales rojas mucho más gruesas.
+
 
 ## **TAREA 3**
 ### **Enunciado:** Tras ver los vídeos [My little piece of privacy](https://www.niklasroy.com/project/88/my-little-piece-of-privacy), [Messa di voce](https://youtu.be/GfoqiyB1ndE?feature=shared) y [Virtual air guitar](https://youtu.be/FIAmyoEpV5c?feature=shared) proponer un demostrador reinterpretando la parte de procesamiento de la imagen, tomando como punto de partida alguna de dichas instalaciones.

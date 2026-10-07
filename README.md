@@ -4,8 +4,8 @@ Repositorio correspondiente a las prácticas de la asignatura **Visión por Comp
 
 ## Autores
 
-- Alicia María Rodríguez Trujillo
-- Kilian Santana Delgado
+- [Alicia María Rodríguez Trujillo](https://github.com/AliciaM05)
+- [Kilian Santana Delgado](https://github.com/kilian2113)
 
 **Grupo:** 01
 
