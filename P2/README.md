@@ -69,9 +69,17 @@ Para detectar el cambio de lado, tomamos como referencia la posición del centro
 Para el sonido que se reproduce cada diez cruces se ha utilizado la función **Beep()** de la librería **winsound**, en Windows.
 
 
-
 https://github.com/user-attachments/assets/0716f7d7-24cd-4d62-88f4-0d9c67256a4f
 
+
+## **TAREA EXTRA**
+Como extensión a la tarea de detección de movimiento, hemos hecho pizarra virtual. Para aislar el movimiento en pantalla, partimos de la base de la Tarea 3: cálculo de la diferencia entre fotogramas consecutivos, suavizado y generación de una máscara binaria.
+
+Con respecto a la detección del centro de movimiento, en lugar de localizar individualmente todos los píxeles blancos y calcular su media, hemos optimizado el proceso empleando la función **moments()** de OpenCV. Esta función calcula los momentos espaciales de la imagen binaria, lo que nos permite extraer directamente el área total del movimiento (mediante el parámetro *m00*) y las coordenadas de su centroide (*cx* y *cy*).
+
+Para generar el trazo en el aire, almacenamos dinámicamente estas coordenadas en una lista llamada *path*. En cada iteración del fotograma, un bucle recorre este historial y utiliza la función **line()** para conectar cada punto con su posición inmediatamente anterior, dibujando así el recorrido del movimiento. La punta del "pincel" se indica visualmente con un círculo rojo empleando la función **circle()**.
+
+Finalmente, para evitar que los trazos pinten la pantalla de forma permanente y se sature la imagen, se ha establecido un límite de almacenamiento con *MAX_POINT*. Una vez alcanzado este límite, elimina la coordenada más antigua de la lista con la instrucción **pop(0)**. Esto genera un efecto visual de estela que se va borrando de forma progresiva conforme el usuario se mueve.
 
 
 
