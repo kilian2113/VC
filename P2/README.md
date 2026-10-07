@@ -16,6 +16,8 @@ Con el objetivo de mantener un código limpio y reutilizable para la siguiente t
 
 En el bloque principal del programa, llamamos a estas funciones de forma secuencial.
 
+<img width="516" height="454" alt="img1" src="https://github.com/user-attachments/assets/f111d998-4fe8-4cdd-8fc8-33410d6ff649" />
+
 
 ## **TAREA 2**
 ### **Enunciado:** Aplica umbralizado a la imagen resultante de Sobel (convertida a 8 bits), y posteriormente realiza el conteo por filas y columnas similar al realizado en el ejemplo con la salida de Canny de píxeles no nulos. Calcula el valor máximo de la cuenta por filas y columnas, y determina las filas y columnas por encima del 0.90*máximo. Remarca con alguna primitiva gráfica dichas filas y columnas sobre la imagen del mandril. Visualiza los resultados obtenidos para la imagen (o una de tu elección) con Canny y Sobel tras umbralizar ¿Cómo se comparan los resultados obtenidos a partir de Sobel y Canny?
@@ -32,6 +34,11 @@ En el bloque principal del programa, mostramos una comparativa inicial entre la 
 
 Finalmente, hacemos uso de **show_full_result()** para generar la visualización final. Esta nos permite desplegar dos ventanas independientes: una dedicada al análisis horizontal (filas) y otra al vertical (columnas), mostrando en cada una la imagen con sus respectivas marcas y la gráfica con la línea del umbral.
 
+<img width="340" height="187" alt="comparación imagen umbralizada y sin umbralizar" src="https://github.com/user-attachments/assets/8c34a687-abb2-419d-9154-26d89d7a18e2" />
+<img width="516" height="454" alt="resultado sobel columnas" src="https://github.com/user-attachments/assets/4e365ddd-3202-4c2d-ac03-0380c1f4189b" />
+<img width="516" height="454" alt="resultado sobel filas" src="https://github.com/user-attachments/assets/e66b0605-9bba-46f7-8cc5-3e3e8b8d05d5" />
+
+
 #### **Comparación entre Canny y Sobel**
 Al comparar visualmente las imágenes binarias base, se observa que el método de Canny genera bordes muy finos y definidos, habitualmente de un solo píxel de grosor. Esto se debe a que su algoritmo incluye internamente una etapa matemática llamada "supresión de no máximos", diseñada específicamente para adelgazar los contornos. Por el contrario, la imagen procesada con el operador de Sobel presenta áreas blancas y bordes mucho más marcados y gruesos. Sobel calcula la magnitud del gradiente (los cambios de intensidad), y al aplicarle un umbralizado binario manual con un valor de 100, cualquier píxel cercano al borde que supere ese valor se convierte en blanco. Esto provoca que múltiples píxeles adyacentes se activen, haciendo más gruesa la línea.   
 
@@ -40,6 +47,10 @@ Esta diferencia inicial en el grosor de los bordes determina el resto de los res
 La combinación de tener bordes más gruesos en la imagen original y un valor de umbral distinto provoca que el número de filas que superan el límite sea significativamente mayor en Sobel (19 filas) que en Canny (7 filas).
 
 Finalmente, esto explica la diferencia en la visualización de los resultados. En la imagen de Canny, al haber menos filas que superan el umbral, las líneas rojas se dibujan de manera más aislada. En la imagen de Sobel, al cumplirse la condición en múltiples filas consecutivas, las líneas se dibujan unas junto a otras, creando el efecto visual de bandas horizontales rojas mucho más gruesas.
+
+<img width="516" height="454" alt="resultado canny filas" src="https://github.com/user-attachments/assets/9c6a2988-7b97-491a-bcbf-2ed3030ef79a" />
+<img width="516" height="454" alt="resultado sobel filas" src="https://github.com/user-attachments/assets/1e2cf3af-6771-42fa-8247-e274bf23f175" />
+
 
 
 ## **TAREA 3**
@@ -56,6 +67,12 @@ Calculamos la media de las coordenadas (**x-y**) de dichos puntos para poder apr
 Para detectar el cambio de lado, tomamos como referencia la posición del centro del movimiento en el eje *x*, estableciendo un margen de 50 píxeles respecto al eje central que separa ambos lados. Por último, mediante el uso de variables guardamos el lado actual y el anterior, bloqueando el conteo hasta que haya un nuevo movimiento que se encuentre en el lado que se acaba de registrar. De esta forma, evitamos contabilizar varias veces el mismo cruce.
 
 Para el sonido que se reproduce cada diez cruces se ha utilizado la función **Beep()** de la librería **winsound**, en Windows.
+
+
+
+https://github.com/user-attachments/assets/0716f7d7-24cd-4d62-88f4-0d9c67256a4f
+
+
 
 
 #### *Bilbliografía*
