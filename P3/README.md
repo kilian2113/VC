@@ -28,6 +28,11 @@
 
 ### IMPORTANTE: No se admite el uso de modelos de aprendizaje profundo
 
+#### *Bibliografía*
+- https://www.bcl.lu/en/Banknotes-and-Coins/billets_pieces/car_pieces/car_tec/index.html
+- https://www.youtube.com/watch?v=FtKNeAbzl1o
+- https://www.youtube.com/watch?v=H-GmodwGBDw
+
 **Autores**: 
 [Alicia María Rodríguez Trujillo](https://github.com/AliciaM05) y 
 [Kilian Santana Delgado](https://github.com/kilian2113)
