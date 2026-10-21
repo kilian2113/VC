@@ -28,10 +28,57 @@
 
 ### IMPORTANTE: No se admite el uso de modelos de aprendizaje profundo
 
+Para llevar a cabo esta tarea, hemos partido de las tres imágenes de entrenamiento, cada una con partículas de una sola clase (fragmentos, pellets y alquitrán), y de la imagen de prueba *MPs_test.jpg* con sus anotaciones en *MPs_test_bbs.csv*. La idea general es segmentar las partículas de cada imagen, describir cada una mediante un conjunto de características geométricas y de color, entrenar un clasificador con las partículas de las imágenes de entrenamiento y, finalmente, clasificar las partículas de la imagen de prueba y compararlas con las anotaciones.
+
+Hemos observado dos problemas que condicionan el método:
+- **Iluminación no uniforme**: las fotografías de entrenamiento tienen sombras y zonas más oscuras en los bordes, y la imagen de prueba, obtenida con escáner, tiene franjas horizontales y un borde inferior gris. Por ello, un umbral fijo o el método de Otsu aplicados directamente sobre la imagen en grises no separaban bien las partículas: con Otsu se perdía casi la mitad de las partículas claras.
+- **Distinta resolución**: las imágenes de entrenamiento (2576x1932) tienen mucha más resolución que la de prueba (790x1186), por lo que una misma partícula ocupa muchos más píxeles en las primeras. Sin corregirlo, el área y el perímetro no son comparables entre imágenes.
+
+Para mantener un código limpio, hemos separado el programa en tres bloques: variables, funciones y programa principal. Las funciones auxiliares son las siguientes:
+
+**estimar_fondo()**: Estima cómo es el fondo de la imagen aplicando un filtro de mediana con una ventana mucho mayor que las partículas, de forma que estas desaparecen y solo queda la iluminación del fondo. El filtro se aplica dos veces, para eliminar los restos que puedan quedar donde hay partículas grandes o muy juntas. Para que sea más rápido, se trabaja sobre una versión reducida de la imagen, que después se vuelve a ampliar a su tamaño original.
+
+**segmentar()**: Resta a la imagen el fondo estimado y mide, en el espacio de color *Lab*, cuánto se diferencia cada píxel del fondo. Además, elimina las franjas del escáner restando la mediana de cada fila y de cada columna, e ignora las variaciones pequeñas de brillo para que las sombras de las partículas no se segmenten. Se le da más peso al color que al brillo, ya que el fondo es gris y casi cualquier partícula se distingue por su color. Tras umbralizar, aplica una apertura para eliminar ruido y un cierre para cerrar huecos, y devuelve los contornos externos que superan un área mínima.
+
+**caracteristicas()**: Calcula 13 características para cada partícula a partir de su contorno. Las siete primeras son las características geométricas del trabajo SMACC: área, perímetro, compacidad, relación entre el área de la partícula y la de su contenedor, relación entre el ancho y el alto del contenedor, relación entre los ejes de la elipse ajustada, y relación entre la distancia mínima y máxima del centroide al contorno. Sin embargo, al probarlas vimos que solo con ellas el acierto apenas llegaba al 55 %. Estas características distinguen bien los pellets, que son redondos y regulares, pero no separan bien los fragmentos del alquitrán, ya que ambos tienen formas irregulares. Por ello hemos añadido seis características más:
+
+- **solidez**: relación entre el área de la partícula y la de su envolvente convexa, que es el contorno que tendría si "rellenáramos" sus entrantes. Los fragmentos son trozos rotos, con bordes quebrados y entrantes, por lo que su solidez es menor (0.91 de media) que la de los pellets y el alquitrán (0.97-0.98), que son más compactos.
+- **dif_L**: diferencia media de brillo entre la partícula y el fondo. Es la característica que mejor identifica el alquitrán, ya que es mucho más oscuro que el resto (-77 de media frente a -31 en fragmentos y -46 en pellets).
+- **dif_a** y **dif_b**: diferencia media de color entre la partícula y el fondo en los dos ejes de color del espacio *Lab* (*a*, de verde a rojo, y *b*, de azul a amarillo). Describen el tono de la partícula: los pellets suelen ser amarillentos (valor de *b* alto), los fragmentos aparecen en muchos colores (blancos, azules, verdes...) y el alquitrán no tiene tono (valores cercanos a 0).
+- **croma**: intensidad del color, calculada a partir de *a* y *b*. Separa las partículas con color de las que son prácticamente grises o negras: el alquitrán tiene una croma de alrededor de 1, frente a valores de 9-11 en fragmentos y pellets.
+- **std_L**: variación del brillo dentro de la partícula, que describe su textura. El alquitrán tiene una superficie rugosa con pequeños brillos, por lo que su variación es mucho mayor (alrededor de 40) que la de fragmentos y pellets (entre 14 y 17), que tienen un color más uniforme.
+
+Las diferencias de brillo y color se miden respecto al fondo y no en valor absoluto, para que dependan lo menos posible de la cámara o del escáner con el que se ha tomado la imagen.
+
+**procesar_imagen()**: Lee una imagen, la reescala si se le indica, la segmenta con **segmentar()** y calcula las características de cada partícula con **caracteristicas()**. Opcionalmente, descarta los contornos que tocan el borde de la imagen, ya que en las fotografías de entrenamiento la esquina inferior derecha es oscura y se detectaba como si fuera una partícula.
+
+**iou()**: Calcula el índice de solapamiento IoU (intersección sobre unión) entre dos cajas, es decir, el área de su intersección dividida entre el área de su unión. Toma valores entre 0, si no se tocan, y 1, si son idénticas.
+
+En el bloque principal del programa, comenzamos corrigiendo la diferencia de resolución entre imágenes. Para ello, calculamos el área mediana de todas las partículas detectadas en las imágenes de entrenamiento y en la imagen de prueba, y reducimos las imágenes de entrenamiento en la proporción necesaria para que ambas medianas coincidan. Es importante señalar que para este ajuste no utilizamos las anotaciones de la imagen de prueba, sino únicamente las partículas que detecta la segmentación. Se trata de una aproximación que funciona si las imágenes contienen partículas de tamaños parecidos; lo ideal sería conocer los milímetros por píxel de cada dispositivo, pero no disponíamos de esa información.
+
+Una vez reescaladas, procesamos las tres imágenes de entrenamiento con **procesar_imagen()**. Como cada imagen contiene partículas de una sola clase, todas las partículas segmentadas en ella reciben directamente esa etiqueta, lo que nos permite construir el conjunto de entrenamiento. Para comprobar que la segmentación es correcta, mostramos los contornos obtenidos sobre cada imagen, y para analizar las características, una tabla con la media y la desviación típica de cada una por clase.
+
+
+
+A continuación, entrenamos el clasificador. Hemos utilizado el clasificador de los k vecinos más próximos (k-NN) de la biblioteca *scikit-learn*, con k=5: cada partícula nueva recibe la clase mayoritaria de las cinco partículas de entrenamiento más parecidas. A diferencia de otros métodos, como las redes neuronales, el k-NN no ajusta ningún parámetro durante el entrenamiento, sino que almacena las partículas de entrenamiento y, al clasificar, calcula la distancia a todas ellas. Por eso funciona bien con pocos datos, como en nuestro caso (unas 180 partículas). Además, no supone ninguna forma concreta en la frontera entre clases, es fácil de interpretar, ya que cada decisión se explica por sus vecinos, y solo requiere elegir el número de vecinos. Hemos tomado k=5 como término medio: con menos, el resultado depende demasiado de una sola partícula, que puede estar mal segmentada, y con más se mezclan partículas de otras clases. Como las características tienen escalas muy distintas (el área se mide en cientos de píxeles y las relaciones entre 0 y 1), las normalizamos previamente con **StandardScaler()** para que todas tengan el mismo peso al calcular la distancia. También probamos una máquina de vectores de soporte y un bosque aleatorio, que obtuvieron un acierto algo menor.
+
+Después, pasamos a la imagen de prueba. Leemos las anotaciones del archivo CSV, segmentamos la imagen y emparejamos cada partícula anotada con la partícula detectada que más se solape con ella, utilizando **iou()**. Cada detección solo puede asociarse a una anotación, y el emparejamiento solo se acepta si el solapamiento es de al menos 0.3. Hemos elegido un umbral bajo porque las partículas miden pocos píxeles y las cajas anotadas son algo holgadas, de forma que con umbrales más altos quedaban sin emparejar partículas que estaban bien detectadas. Con este umbral se emparejan 110 de las 120 partículas anotadas.
+
+Clasificamos las partículas emparejadas y comparamos la clase predicha con la anotada. Calculamos la exactitud, la precisión, la exhaustividad y el valor F1 con las funciones accuracy_score(), precision_score(), recall_score() y f1_score(), y la matriz de confusión con confusion_matrix(). Obtenemos una exactitud del 81.8 %, una precisión del 83.3 %, una exhaustividad del 81.8 % y un valor F1 del 81.1 %.
+
+
+Además, dibujamos sobre la imagen de prueba el contorno de cada partícula con el color de la clase predicha y, en las mal clasificadas, escribimos encima su clase real; las partículas anotadas que no se detectaron se marcan con una caja gris.
+
+
+En cuanto a los resultados, los errores más frecuentes son pellets clasificados como fragmentos y alquitrán clasificado como fragmento, debidos principalmente a que las imágenes de entrenamiento y de prueba se han tomado con dispositivos e iluminación muy diferentes, lo que hace que el color de una misma clase no sea idéntico en ambas. Además, las 10 partículas no detectadas corresponden sobre todo a partículas que se tocan entre sí, y que la segmentación une en una sola región, y a fragmentos blancos casi transparentes, que apenas se diferencian del fondo.
+
+
 #### *Bibliografía*
 - https://www.bcl.lu/en/Banknotes-and-Coins/billets_pieces/car_pieces/car_tec/index.html
 - https://www.youtube.com/watch?v=FtKNeAbzl1o
 - https://www.youtube.com/watch?v=H-GmodwGBDw
+- https://doi.org/10.1109/ACCESS.2020.2970498
+- https://claude.ai/share/06a9976a-8281-48ca-aeed-025f1e5250e5 
 
 **Autores**: 
 [Alicia María Rodríguez Trujillo](https://github.com/AliciaM05) y 
