@@ -58,7 +58,8 @@ En el bloque principal del programa, comenzamos corrigiendo la diferencia de res
 
 Una vez reescaladas, procesamos las tres imágenes de entrenamiento con **procesar_imagen()**. Como cada imagen contiene partículas de una sola clase, todas las partículas segmentadas en ella reciben directamente esa etiqueta, lo que nos permite construir el conjunto de entrenamiento. Para comprobar que la segmentación es correcta, mostramos los contornos obtenidos sobre cada imagen, y para analizar las características, una tabla con la media y la desviación típica de cada una por clase.
 
-
+<img width="1790" height="477" alt="image" src="https://github.com/user-attachments/assets/7777c4c2-4594-49da-aa72-dc9be349e009" />
+<img width="272" height="553" alt="image" src="https://github.com/user-attachments/assets/1cb1fee7-5f03-4715-ba34-c540de9b4dd9" />
 
 A continuación, entrenamos el clasificador. Hemos utilizado el clasificador de los k vecinos más próximos (k-NN) de la biblioteca *scikit-learn*, con k=5: cada partícula nueva recibe la clase mayoritaria de las cinco partículas de entrenamiento más parecidas. A diferencia de otros métodos, como las redes neuronales, el k-NN no ajusta ningún parámetro durante el entrenamiento, sino que almacena las partículas de entrenamiento y, al clasificar, calcula la distancia a todas ellas. Por eso funciona bien con pocos datos, como en nuestro caso (unas 180 partículas). Además, no supone ninguna forma concreta en la frontera entre clases, es fácil de interpretar, ya que cada decisión se explica por sus vecinos, y solo requiere elegir el número de vecinos. Hemos tomado k=5 como término medio: con menos, el resultado depende demasiado de una sola partícula, que puede estar mal segmentada, y con más se mezclan partículas de otras clases. Como las características tienen escalas muy distintas (el área se mide en cientos de píxeles y las relaciones entre 0 y 1), las normalizamos previamente con **StandardScaler()** para que todas tengan el mismo peso al calcular la distancia. También probamos una máquina de vectores de soporte y un bosque aleatorio, que obtuvieron un acierto algo menor.
 
@@ -66,8 +67,10 @@ Después, pasamos a la imagen de prueba. Leemos las anotaciones del archivo CSV,
 
 Clasificamos las partículas emparejadas y comparamos la clase predicha con la anotada. Calculamos la exactitud, la precisión, la exhaustividad y el valor F1 con las funciones accuracy_score(), precision_score(), recall_score() y f1_score(), y la matriz de confusión con confusion_matrix(). Obtenemos una exactitud del 81.8 %, una precisión del 83.3 %, una exhaustividad del 81.8 % y un valor F1 del 81.1 %.
 
-
 Además, dibujamos sobre la imagen de prueba el contorno de cada partícula con el color de la clase predicha y, en las mal clasificadas, escribimos encima su clase real; las partículas anotadas que no se detectaron se marcan con una caja gris.
+
+<img width="662" height="562" alt="image" src="https://github.com/user-attachments/assets/1349ccfc-e57f-44a5-b4a7-37b6a5fe323a" />
+<img width="635" height="965" alt="image" src="https://github.com/user-attachments/assets/aecc7ab7-828d-4ccf-ab21-76ed2539f12c" />
 
 
 En cuanto a los resultados, los errores más frecuentes son pellets clasificados como fragmentos y alquitrán clasificado como fragmento, debidos principalmente a que las imágenes de entrenamiento y de prueba se han tomado con dispositivos e iluminación muy diferentes, lo que hace que el color de una misma clase no sea idéntico en ambas. Además, las 10 partículas no detectadas corresponden sobre todo a partículas que se tocan entre sí, y que la segmentación une en una sola región, y a fragmentos blancos casi transparentes, que apenas se diferencian del fondo.
