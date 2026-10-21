@@ -22,11 +22,13 @@ En la imagen ideal hemos probado dos formas de detectar las monedas.
 
 La primera utiliza la transformada de Hough para círculos con **HoughCircles()**. Antes, convertimos la imagen a escala de grises y aplicamos un filtro de mediana con **medianBlur()** para eliminar el ruido y los detalles finos del relieve de las monedas, que podrían generar círculos falsos. A **HoughCircles()** le indicamos una distancia mínima entre centros, para no detectar dos veces la misma moneda, y un radio mínimo y máximo acordes con el tamaño de las monedas en la imagen. Esta función devuelve directamente el centro y el radio de cada círculo, por lo que el diámetro en píxeles es el doble del radio.
 
+<img width="252" height="504" alt="image" src="https://github.com/user-attachments/assets/db441349-5c67-4c50-b9b0-34551f166158" />
+
 La segunda umbraliza la imagen en grises con el método de Otsu, obtiene los contornos externos con **findContours()** y descarta los de área muy pequeña, que no pueden ser monedas. Como el contorno no da directamente el diámetro, lo calculamos a partir del área, como el diámetro del círculo que tendría esa misma área.
 
+<img width="252" height="504" alt="image" src="https://github.com/user-attachments/assets/cee7104a-9e1a-477b-81a8-9942a21dae17" />
+
 Para convertir píxeles a milímetros, en lugar de seleccionar una moneda haciendo clic, tomamos como referencia la moneda de mayor diámetro detectada, que suponemos que es la de 2 €, ya que es la más grande de todas. Dividiendo su diámetro real (25.75 mm) entre su diámetro en píxeles obtenemos los milímetros que mide cada píxel. A continuación, para cada moneda convertimos su diámetro a milímetros y le asignamos el valor cuyo diámetro real está más próximo, sumando ese valor al total. Por último, dibujamos cada moneda sobre la imagen con su valor e imprimimos el número de monedas encontradas y el dinero total.
-
-
 
 Este método funciona porque la imagen ideal tiene un fondo uniforme, las monedas no se tocan y hay una moneda de 2 €. Si no la hubiera, la calibración tomaría como referencia otra moneda y todos los valores saldrían desplazados.
 
@@ -49,6 +51,10 @@ En el bloque principal del programa, leemos continuamente los fotogramas de la c
 Sobre el folio rectificado, convertido a escala de grises y suavizado con un filtro de mediana, buscamos las monedas con **HoughCircles()**. Limitamos los radios a los que corresponden a diámetros entre 15 y 27 mm, que abarcan todas las monedas de euro, y descartamos los círculos que se salen de la imagen. Para cada moneda calculamos su diámetro en milímetros, obtenemos su grupo de color con **color_group()** y, dentro de ese grupo, le asignamos el valor cuyo diámetro real está más próximo. Combinar color y tamaño evita confusiones entre monedas de diámetro parecido, como la de 1 € (23.25 mm) y la de 20 céntimos (22.25 mm). Si la diferencia entre el diámetro medido y el de la moneda asignada supera 1 mm, consideramos que el objeto no es una moneda conocida y lo marcamos con un signo de interrogación, sin sumarlo al total.
 
 Por último, usamos la matriz inversa para trasladar el contorno y el centro de cada moneda desde el folio rectificado al fotograma original, y dibujamos sobre él cada moneda con su valor, junto con el número de monedas detectadas y el dinero total. Además, mostramos el folio rectificado en una ventana aparte. El programa termina al pulsar la tecla ESC.
+
+
+
+
 
 
 
