@@ -54,7 +54,7 @@ Por último, usamos la matriz inversa para trasladar el contorno y el centro de 
 
 
 
-
+https://github.com/user-attachments/assets/910bee92-7810-4e79-9f56-0ddc42f3521b
 
 
 
@@ -137,6 +137,9 @@ La principal ventaja de este método es que se puede interpretar: con **plot_tre
 
 Con solo estas dos preguntas obtenemos una exactitud del 76.4 %, una precisión del 77.3 %, una exhaustividad del 76.4 % y un valor F1 del 75.7 %, algo por debajo del k-NN (81.8 % de exactitud). Esto demuestra que la mayor parte de la información para distinguir las tres clases está en muy pocas características, aunque el k-NN, al usar todas a la vez, consigue un resultado mejor. Como en el k-NN, los errores más frecuentes son pellets y alquitrán clasificados como fragmentos.
 
+<img width="662" height="562" alt="image" src="https://github.com/user-attachments/assets/c398628d-ab8c-40d9-9a08-0158c38328c7" />
+<img width="1105" height="581" alt="image" src="https://github.com/user-attachments/assets/6ae08b38-1266-4904-b86b-534c4957a5d8" />
+<img width="635" height="967" alt="image" src="https://github.com/user-attachments/assets/8d897e2a-de5c-46a9-83a1-cf46436957bc" />
 
 
 #### *Bibliografía*
