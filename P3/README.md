@@ -84,16 +84,24 @@ Para mantener un código limpio, hemos separado el programa en tres bloques: var
 **caracteristicas()**: Calcula 13 características para cada partícula a partir de su contorno. Las siete primeras son las características geométricas del trabajo SMACC: área, perímetro, compacidad, relación entre el área de la partícula y la de su contenedor, relación entre el ancho y el alto del contenedor, relación entre los ejes de la elipse ajustada, y relación entre la distancia mínima y máxima del centroide al contorno. Sin embargo, al probarlas vimos que solo con ellas el acierto apenas llegaba al 55 %. Estas características distinguen bien los pellets, que son redondos y regulares, pero no separan bien los fragmentos del alquitrán, ya que ambos tienen formas irregulares. Por ello hemos añadido seis características más:
 
 - **solidez**: relación entre el área de la partícula y la de su envolvente convexa, que es el contorno que tendría si "rellenáramos" sus entrantes. Los fragmentos son trozos rotos, con bordes quebrados y entrantes, por lo que su solidez es menor (0.91 de media) que la de los pellets y el alquitrán (0.97-0.98), que son más compactos.
-- **dif_L**: diferencia media de brillo entre la partícula y el fondo. Es la característica que mejor identifica el alquitrán, ya que es mucho más oscuro que el resto (-77 de media frente a -31 en fragmentos y -46 en pellets).
+- **dif_l**: diferencia media de brillo entre la partícula y el fondo. Es la característica que mejor identifica el alquitrán, ya que es mucho más oscuro que el resto (-77 de media frente a -31 en fragmentos y -46 en pellets).
 - **dif_a** y **dif_b**: diferencia media de color entre la partícula y el fondo en los dos ejes de color del espacio *Lab* (*a*, de verde a rojo, y *b*, de azul a amarillo). Describen el tono de la partícula: los pellets suelen ser amarillentos (valor de *b* alto), los fragmentos aparecen en muchos colores (blancos, azules, verdes...) y el alquitrán no tiene tono (valores cercanos a 0).
 - **croma**: intensidad del color, calculada a partir de *a* y *b*. Separa las partículas con color de las que son prácticamente grises o negras: el alquitrán tiene una croma de alrededor de 1, frente a valores de 9-11 en fragmentos y pellets.
-- **std_L**: variación del brillo dentro de la partícula, que describe su textura. El alquitrán tiene una superficie rugosa con pequeños brillos, por lo que su variación es mucho mayor (alrededor de 40) que la de fragmentos y pellets (entre 14 y 17), que tienen un color más uniforme.
+- **dsv_l**: variación del brillo dentro de la partícula, que describe su textura. El alquitrán tiene una superficie rugosa con pequeños brillos, por lo que su variación es mucho mayor (alrededor de 40) que la de fragmentos y pellets (entre 14 y 17), que tienen un color más uniforme.
 
 Las diferencias de brillo y color se miden respecto al fondo y no en valor absoluto, para que dependan lo menos posible de la cámara o del escáner con el que se ha tomado la imagen.
 
 **procesar_imagen()**: Lee una imagen, la reescala si se le indica, la segmenta con **segmentar()** y calcula las características de cada partícula con **caracteristicas()**. Opcionalmente, descarta los contornos que tocan el borde de la imagen, ya que en las fotografías de entrenamiento la esquina inferior derecha es oscura y se detectaba como si fuera una partícula.
 
 **iou()**: Calcula el índice de solapamiento IoU (intersección sobre unión) entre dos cajas, es decir, el área de su intersección dividida entre el área de su unión. Toma valores entre 0, si no se tocan, y 1, si son idénticas.
+
+**mostrar_metricas()**: Calcula la exactitud, la precisión, la exhaustividad y el valor F1 con las funciones **accuracy_score()**, **precision_score()**, **recall_score()** y **f1_score()** de *scikit-learn*, las imprime y devuelve la exactitud.
+
+**mostrar_matriz_confusion()**: Obtiene la matriz de confusión con **confusion_matrix()** y la dibuja. Muestra para cada clase cuántas partículas se clasifican correctamente y cuántas se confunden con cada una de las otras dos.
+
+**mostrar_resultado()**: Dibuja sobre la imagen de prueba el contorno de cada partícula con el color de la clase predicha, escribe encima la clase real de las que están mal clasificadas y marca con una caja gris las partículas anotadas que no se detectaron.
+
+Estas tres funciones se utilizan tanto con el k-NN como con el árbol de decisión del apartado extra, para poder comparar ambos de la misma forma.
 
 En el bloque principal del programa, comenzamos corrigiendo la diferencia de resolución entre imágenes. Para ello, calculamos el área mediana de todas las partículas detectadas en las imágenes de entrenamiento y en la imagen de prueba, y reducimos las imágenes de entrenamiento en la proporción necesaria para que ambas medianas coincidan. Es importante señalar que para este ajuste no utilizamos las anotaciones de la imagen de prueba, sino únicamente las partículas que detecta la segmentación. Se trata de una aproximación que funciona si las imágenes contienen partículas de tamaños parecidos; lo ideal sería conocer los milímetros por píxel de cada dispositivo, pero no disponíamos de esa información.
 
@@ -106,9 +114,8 @@ A continuación, entrenamos el clasificador. Hemos utilizado el clasificador de 
 
 Después, pasamos a la imagen de prueba. Leemos las anotaciones del archivo CSV, segmentamos la imagen y emparejamos cada partícula anotada con la partícula detectada que más se solape con ella, utilizando **iou()**. Cada detección solo puede asociarse a una anotación, y el emparejamiento solo se acepta si el solapamiento es de al menos 0.3. Hemos elegido un umbral bajo porque las partículas miden pocos píxeles y las cajas anotadas son algo holgadas, de forma que con umbrales más altos quedaban sin emparejar partículas que estaban bien detectadas. Con este umbral se emparejan 110 de las 120 partículas anotadas.
 
-Clasificamos las partículas emparejadas y comparamos la clase predicha con la anotada. Calculamos la exactitud, la precisión, la exhaustividad y el valor F1 con las funciones accuracy_score(), precision_score(), recall_score() y f1_score(), y la matriz de confusión con confusion_matrix(). Obtenemos una exactitud del 81.8 %, una precisión del 83.3 %, una exhaustividad del 81.8 % y un valor F1 del 81.1 %.
+Por último, clasificamos las partículas emparejadas con el k-NN y evaluamos el resultado llamando a **mostrar_metricas()**, **mostrar_matriz_confusion()** y **mostrar_resultado()**. Obtenemos una exactitud del 81.8 %, una precisión del 83.3 %, una exhaustividad del 81.8 % y un valor F1 del 81.1 %.
 
-Además, dibujamos sobre la imagen de prueba el contorno de cada partícula con el color de la clase predicha y, en las mal clasificadas, escribimos encima su clase real; las partículas anotadas que no se detectaron se marcan con una caja gris.
 
 <img width="662" height="562" alt="image" src="https://github.com/user-attachments/assets/1349ccfc-e57f-44a5-b4a7-37b6a5fe323a" />
 <img width="635" height="965" alt="image" src="https://github.com/user-attachments/assets/aecc7ab7-828d-4ccf-ab21-76ed2539f12c" />
@@ -116,12 +123,23 @@ Además, dibujamos sobre la imagen de prueba el contorno de cada partícula con 
 
 En cuanto a los resultados, los errores más frecuentes son pellets clasificados como fragmentos y alquitrán clasificado como fragmento, debidos principalmente a que las imágenes de entrenamiento y de prueba se han tomado con dispositivos e iluminación muy diferentes, lo que hace que el color de una misma clase no sea idéntico en ambas. Además, las 10 partículas no detectadas corresponden sobre todo a partículas que se tocan entre sí, y que la segmentación une en una sola región, y a fragmentos blancos casi transparentes, que apenas se diferencian del fondo.
 
+### Extra: clasificación con un árbol de decisión
+
+Como alternativa más sencilla al k-NN, hemos probado un árbol de decisión de la biblioteca *scikit-learn* con **DecisionTreeClassifier()**. Un árbol de decisión clasifica cada partícula mediante una serie de preguntas del tipo "¿esta característica es menor que este umbral?", que aprende a partir de las partículas de entrenamiento eligiendo en cada paso la pregunta que mejor separa las clases. Hemos limitado su profundidad a 2, de modo que cada partícula se clasifica respondiendo como mucho a dos preguntas. A diferencia del k-NN, no necesita normalizar las características, ya que cada pregunta compara una sola característica con un umbral. Para evaluarlo, llamamos a las mismas funciones que con el k-NN (**mostrar_metricas()**, **mostrar_matriz_confusion()** y **mostrar_resultado()**), de forma que los resultados de ambos clasificadores son directamente comparables.
+
+La principal ventaja de este método es que se puede interpretar: con **plot_tree()** dibujamos las reglas aprendidas. La primera pregunta es sobre la textura (**dsv_l**), que separa el alquitrán, rugoso y con brillos, del resto. A continuación, entre las partículas de textura uniforme, la relación entre la distancia mínima y máxima del centroide al contorno separa los pellets, que son redondos, de los fragmentos. Entre las de textura rugosa, la relación entre el ancho y el alto del contenedor separa las pocas partículas muy alargadas, que clasifica como fragmentos, del alquitrán. Estas reglas coinciden con lo que observamos en la tabla de características.
+
+Con solo estas dos preguntas obtenemos una exactitud del 76.4 %, una precisión del 77.3 %, una exhaustividad del 76.4 % y un valor F1 del 75.7 %, algo por debajo del k-NN (81.8 % de exactitud). Esto demuestra que la mayor parte de la información para distinguir las tres clases está en muy pocas características, aunque el k-NN, al usar todas a la vez, consigue un resultado mejor. Como en el k-NN, los errores más frecuentes son pellets y alquitrán clasificados como fragmentos.
+
+
 
 #### *Bibliografía*
 - https://www.bcl.lu/en/Banknotes-and-Coins/billets_pieces/car_pieces/car_tec/index.html
 - https://www.youtube.com/watch?v=FtKNeAbzl1o
 - https://www.youtube.com/watch?v=H-GmodwGBDw
 - https://doi.org/10.1109/ACCESS.2020.2970498
+- https://www.ibm.com/es-es/think/topics/knn 
+- https://aprendeia.com/2019/10/25/arboles-de-decision-clasificacion-scikit-learn-machine-learning/
 - https://claude.ai/share/06a9976a-8281-48ca-aeed-025f1e5250e5
 
 **Autores**: 
