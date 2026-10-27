@@ -26,10 +26,13 @@
 Para llevar a cabo esta tarea, primero calculamos el dinero presente en la imagen ideal *Monedas.jpg* y, después, desarrollamos un demostrador en vivo que lo calcula a partir de la imagen de la cámara. En ambos casos la idea general es la misma: detectar las monedas, medir su diámetro en píxeles, convertirlo a milímetros mediante una referencia de tamaño conocido y asignar a cada moneda el valor cuyo diámetro real sea más parecido.
 
 Para ello, hemos definido un diccionario con el diámetro oficial en milímetros de cada moneda de euro:
+
 <div align="center">
+
 | Moneda | 1 cént. | 2 cént. | 5 cént. | 10 cént. | 20 cént. | 50 cént. | 1 € | 2 € |
-|---|---|---|---|---|---|---|---|---|
-| Diámetro (mm) | 16.25 | 18.75 | 21.25 | 19.75 | 22.25 | 24.25 | 23.25 | 25.75 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Diámetro (mm)** | 16.25 | 18.75 | 21.25 | 19.75 | 22.25 | 24.25 | 23.25 | 25.75 |
+
 </div>
 
 ### Imagen ideal
