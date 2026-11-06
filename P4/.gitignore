@@ -1,0 +1,16 @@
+# Dataset
+dataset_yolo/
+Imagenes VC/
+*.cache
+
+# Vídeos y pesos base (yolo11n.pt se descarga solo)
+*.mp4
+*.MP4
+yolo11n.pt
+
+# Del entrenamiento solo hace falta best.pt
+runs/**/last.pt
+runs/detect/
+
+# Mosaicos con fotos del dataset (se ven matrículas)
+runs/**/*_batch*.jpg
