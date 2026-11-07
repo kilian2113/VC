@@ -3,10 +3,11 @@ dataset_yolo/
 Imagenes VC/
 *.cache
 
-# Vídeos y pesos base (yolo11n.pt se descarga solo)
+# Vídeos, csv y pesos base (yolo11n.pt se descarga solo)
 *.mp4
 *.MP4
 yolo11n.pt
+*.csv
 
 # Del entrenamiento solo hace falta best.pt
 runs/**/last.pt
