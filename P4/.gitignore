@@ -3,11 +3,10 @@ dataset_yolo/
 Imagenes VC/
 *.cache
 
-# Vídeos, csv y pesos base (yolo11n.pt se descarga solo)
+# Vídeos y pesos base (yolo11n.pt se descarga solo)
 *.mp4
 *.MP4
 yolo11n.pt
-*.csv
 
 # Del entrenamiento solo hace falta best.pt
 runs/**/last.pt
@@ -15,3 +14,7 @@ runs/detect/
 
 # Mosaicos con fotos del dataset (se ven matrículas)
 runs/**/*_batch*.jpg
+
+# Comparativa OCR: recortes de matrículas reales y lista de textos reales
+ocr_eval/recortes/
+ocr_eval/gt.csv
