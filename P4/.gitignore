@@ -32,3 +32,7 @@ __pycache__/
 
 # Imagen de prueba del notebook de RT-DETR
 test.jpg
+
+# Evaluaciones en validación: se regeneran con la celda 7 de VC_P4_YOLO (solo hace falta test)
+runs/*_val/
+runs/*_val_conf*/
