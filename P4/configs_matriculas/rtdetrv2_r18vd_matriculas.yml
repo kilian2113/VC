@@ -1,0 +1,45 @@
+__include__: [
+  '../RT-DETR/rtdetrv2_pytorch/configs/rtdetrv2/rtdetrv2_r18vd_120e_coco.yml',
+]
+
+# Carpeta de resultados: pesos (best.pth, last.pth), log.txt y curvas de TensorBoard (summary/)
+output_dir: ./runs_rtdetr/rtdetrv2_r18_matriculas
+
+
+# --- Dataset: una sola clase (matrícula), con la misma división que YOLO ---
+num_classes: 1
+remap_mscoco_category: False     # usar nuestro category_id (0) tal cual, no el mapeo de COCO
+
+train_dataloader:
+  dataset:
+    img_folder: ./dataset_yolo/images/train/
+    ann_file: ./dataset_coco/annotations/instances_train.json
+    transforms:
+      policy:
+        epoch: 117                # el aumento de datos fuerte se desactiva en las 3 últimas épocas
+  total_batch_size: 8            # 16 por defecto; 8 para que quepa en 6 GB de VRAM
+  num_workers: 4                 # en Windows, si se queda colgado al empezar, poner 0
+
+val_dataloader:
+  dataset:
+    img_folder: ./dataset_yolo/images/val/
+    ann_file: ./dataset_coco/annotations/instances_val.json
+  total_batch_size: 8
+  num_workers: 4
+
+
+# --- Entrenamiento ---
+epoches: 120
+checkpoint_freq: 20              # copia de seguridad cada 20 épocas (best.pth y last.pth se guardan siempre)
+use_amp: True                    # precisión mixta (además hay que lanzar train.py con --use-amp)
+
+# Pesos de ImageNet del backbone: no hacen falta, se parte de los pesos de COCO (-t al entrenar)
+PResNet:
+  pretrained: False
+
+# Calentamiento: 2000 iteraciones está pensado para COCO (118k imágenes).
+# Con ~1670 imágenes y lote 8 hay ~208 iteraciones por época -> 200 ≈ 1 época.
+ema:
+  warmups: 200
+lr_warmup_scheduler:
+  warmup_duration: 200

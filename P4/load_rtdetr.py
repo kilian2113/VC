@@ -61,7 +61,7 @@ def load_rtdetr(family="v2", size="s", device=DEVICE):
     
     # Teniendo el archivo de configuración y los pesos descargados, cargamos el modelo y el postprocesador.
     load_config.__defaults__[0].clear()
-    cfg = YAMLConfig(f"./configs/{cfg_name}")
+    cfg = YAMLConfig(os.path.join(REPO, "configs", cfg_name))
    
     ckpt = torch.load(WEIGHTS, map_location="cpu", weights_only=True)
     cfg.model.load_state_dict(ckpt["ema"]["module"] if "ema" in ckpt else ckpt["model"])
