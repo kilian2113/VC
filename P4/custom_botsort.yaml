@@ -1,0 +1,25 @@
+# custom_botsort.yaml
+# BoT-SORT con re-identificación por aspecto: conserva el ID de los coches tapados temporalmente
+
+tracker_type: botsort
+
+# Umbrales de detección (mismos que en custom_bytetrack.yaml)
+track_high_thresh: 0.50
+track_low_thresh: 0.10
+new_track_thresh: 0.60
+
+# Mantener IDs durante más tiempo
+track_buffer: 300
+
+# Asociación entre detecciones
+match_thresh: 0.85
+fuse_score: True
+
+# Compensación del movimiento de cámara
+gmc_method: sparseOptFlow
+
+# Re-identificación por aspecto
+proximity_thresh: 0.5      # solape mínimo para considerar el aspecto al emparejar
+appearance_thresh: 0.25    # similitud de aspecto necesaria para mantener el ID
+with_reid: True
+model: auto                # usa las características del propio YOLO (no descarga otro modelo)
