@@ -1,5 +1,6 @@
 # Dataset
 dataset_yolo/
+dataset_coco/
 Imagenes VC/
 *.cache
 
@@ -18,3 +19,16 @@ runs/**/*_batch*.jpg
 # Comparativa OCR: recortes de matrículas reales y lista de textos reales
 ocr_eval/recortes/
 ocr_eval/gt.csv
+
+# RT-DETR: repositorio oficial y pesos descargados
+RT-DETR/
+weights/
+
+# Pesos y estados de RT-DETR
+*.pth
+
+# Cachés de Python
+__pycache__/
+
+# Imagen de prueba del notebook de RT-DETR
+test.jpg
