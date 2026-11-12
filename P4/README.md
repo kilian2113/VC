@@ -24,7 +24,7 @@ Como ampliación del trabajo, se realizan dos tareas adicionales:
 
 1. [Detección de personas y vehículos con YOLO](#1-detección-de-personas-y-vehículos-con-yolo)
 2. [Detección de matrículas](#2-detección-de-matrículas)
-3. [Reconocimiento de matriculas](#3-reconocimiento-de-matriculas)
+3. [Reconocimiento de matrículas](#3-reconocimiento-de-matrículas)
 4. [Resultados](#4-resultados)
 5. [Anonimización de personas y matrículas](#5-anonimización-de-personas-y-matrículas)
 6. [Especificaciones del equipo](#6-especificaciones-del-equipo)
@@ -53,19 +53,54 @@ Además, se utiliza **model=auto** para aprovechar las características extraíd
 
 ## 2. Detección de matrículas
 
+En esta sección se aborda el entrenamiento de modelos específicos para la detección de matrículas. Para ello, se utilizan dos arquitecturas diferentes, **YOLO** y **RT-DETR**, con el objetivo de comparar su rendimiento en esta tarea.
+
 ### Conjunto de datos
-https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI
+El conjunto de datos, al cual se puede accede desde este [enlace](https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI) contiene **2418 imágenes** recopiladas una a una con matrículas etiquetadas manualmente en formato **YOLO**. Para el entrenamiento este dataset se dividió en:
+
+| Partición | Imágenes | Matrículas |
+|---|---|---|
+| Entrenamiento | 1670 | 3244 |
+| Validación | 358 | 721 |
+| Test | 359 | 700 |
+| **Total** | **2418** | **4665** | 
+
+**YOLO11n** se entrena directamente con anotaciones YOLO. RT-DETR (implementación de Baidu) necesita anotaciones en **formato COCO** para poder entrenar. La conversión se hace con el script [`yolo_to_coco.py`](./yolo_to_coco.py).
+
+### Entrenamiento
+
+Para el entrenamiento de ambos modelos se han usado la misma configuracion:
+- EPOCHS = 120
+- BATCH = 8
+- WORKERS = 4
+
+Los resultados de los entrenamientos se pueden ver en [`results.csv`](./runs/matriculas_yolo11n_1280_min001/results.csv) para **YOLO11n** y [`log.txt`](./runs_rtdetr/rtdetrv2_r18_matriculas/log.txt) para **RT-DETR r18**
+ 
+### Evaluación
+
+<div align=center>
+<img width="1390" height="490" alt="image" src="https://github.com/user-attachments/assets/aa6ffdb7-2c18-4e5f-a42a-9e84ba41fcfb" />
 
 
+| Modelo | mAP@0.5 | F1 máx. (conf.) | Precisión | Exhaustividad | TP / FP / FN | ms/imagen |
+|---|---|---|---|---|---|---|
+| YOLO11n (1280) | 0.838 | 0.84 (0.37) | 0.87 | 0.81 | 570 / 88 / 130 | 19.1 |
+| RT-DETR r18 (640) | 0.858 | 0.86 (0.55) | 0.91 | 0.82 | 576 / 58 / 124 | 33.6 |
+
+</div>
 
 
+**Conclusiones:** **RT-DETR r18** obtiene mejores resultados de detección (mAP@0.5 de 0.858 frente a 0.838 y F1 máximo de 0.86 frente a 0.84) y es más robusto a la elección del umbral de confianza.
 
+---
 
+## 3. Reconocimiento de matrículas
 
 ---
 
 ## 4. Resultados
-
+Cada ejecución sobre el vídeo genera una nueva fila en un **CSV**.
+`fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula`
 | Objeto | Total |
 |:---|:---|
 | Bicicleta | 2 |
@@ -73,6 +108,12 @@ https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI
 | Coche | 64 |
 | Moto | 6 |
 | Perona | 20 |
+
+---
+
+## 5. Anonimización de personas y matrículas
+
+Para proteger la privacidad, las **personas** y las **matrículas** detectadas se anonimizan con un **pixelado intenso** sobre la zona detectada.
 
 ---
 
