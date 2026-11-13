@@ -56,7 +56,7 @@ Además, se utiliza **model=auto** para aprovechar las características extraíd
 En esta sección se aborda el entrenamiento de modelos específicos para la detección de matrículas. Para ello, se utilizan dos arquitecturas diferentes, **YOLO** y **RT-DETR**, con el objetivo de comparar su rendimiento en esta tarea.
 
 ### Conjunto de datos
-El conjunto de datos, al cual se puede accede desde este [enlace](https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI) contiene **2418 imágenes** recopiladas una a una con matrículas etiquetadas manualmente en formato **YOLO**. Para el entrenamiento, se han utilizado 2387 imágenes ya que cuando se comenzó con el entranmiento no estaban todas las imágenes disponibles, este dataset se dividió en:
+El conjunto de datos, al cual se puede acceder desde este [enlace](https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI) contiene **2418 imágenes** recopiladas una a una con matrículas etiquetadas manualmente en formato **YOLO**. Para el entrenamiento, se han utilizado 2387 imágenes ya que cuando se comenzó con el entrenamiento no estaban todas las imágenes disponibles, este dataset se dividió en:
 
 | Partición | Imágenes | Matrículas | Porcentaje |
 |---|---|---|---|
@@ -107,17 +107,13 @@ En train, las pérdidas se calculan sobre imágenes con aumento de datos, y en v
 
 **Análisis**
 
-*Pérdidas de entrenamiento.* Las tres pérdidas de train bajan en los dos modelos hasta la última época. En la pérdida de localización, la bajada se vuelve más pronunciada en las 10 últimas épocas, lo que coincide con que Ultralytics desactiva el aumento de datos por mosaico al final del entrenamiento (`close_mosaic: 10` en `args.yaml`). Las imágenes de entrenamiento se vuelven más sencillas y la pérdida baja. La pérdida de clasificación de train es muy alta en la primera época y cae de golpe en la segunda, en los dos modelos. La cabeza de clasificación se crea nueva al pasar de las 80 clases del dataset COCO (con el que se preentrenó `yolo11n.pt`) a una sola (matrícula) y aprende muy rápido a distinguir la matrícula del fondo. Desde la segunda época, las curvas de los dos modelos casi se superponen y bajan de forma continua.
+*Pérdidas de entrenamiento.* Las tres bajan en los dos modelos hasta la última época. La de clasificación es muy alta en la primera época y cae de golpe en la segunda: la cabeza de clasificación se crea nueva al pasar de las 80 clases de COCO (con las que se preentrenó `yolo11n.pt`) a una sola, y aprende muy rápido a distinguir la matrícula del fondo. En las 10 últimas épocas, la pérdida de localización baja más deprisa, porque Ultralytics desactiva el aumento de datos por mosaico (`close_mosaic: 10`) y las imágenes de entrenamiento se vuelven más sencillas.
 
-*Pérdidas de validación y sobreajuste.* La pérdida de clasificación de val baja hasta el final en los dos modelos. Las pérdidas de localización y DFL de val se comportan distinto según la resolución:
-- En el **modelo de 640**, bajan hasta la época 60 aproximadamente y después se mantienen planas hasta el final (en torno a 1,5 y 0,96).
-- En el **modelo de 1280**, alcanzan su mínimo entre las épocas 50 y 70 (en torno a 1,3 y 1,08) y después suben ligeramente (en torno a 1,35 y 1,10). Mientras tanto, las de train siguen bajando. Esto indica un **sobreajuste leve** en la localización de las cajas: el modelo aprende detalles de las imágenes de entrenamiento que no le sirven para imágenes nuevas.
+*Pérdidas de validación y sobreajuste.* La de clasificación baja hasta el final en los dos modelos. Las de localización y DFL, en cambio, se estabilizan hacia la época 60. En el modelo de 640 se mantienen planas hasta el final. En el de 1280 suben ligeramente (de en torno a 1,3 a 1,35 y de 1,08 a 1,10) mientras las de train siguen bajando, lo que indica un **sobreajuste leve** en la localización de las cajas. No llega a afectar a la detección, porque ninguna métrica de validación empeora y se guarda la mejor época en validación (`best.pt`).
 
-Aun así, ninguna métrica de validación empeora en esas épocas, así que el sobreajuste no llega a afectar a la detección. Además, como se guarda la época con mejor resultado en validación (`best.pt`), no se usa un modelo sobreajustado.
+*Métricas de validación.* Tras una caída brusca del modelo de 1280 en las primeras épocas (precisión cerca de 0,4), la precisión de los dos modelos evoluciona casi igual y termina en torno a 0,88-0,90. La diferencia está en la exhaustividad: la del modelo de 1280 queda por encima durante todo el entrenamiento (en torno a 0,80 frente a 0,72 al final), y lo mismo ocurre con el mAP@0.5 (0,85 frente a 0,76) y el mAP@0.5:0.95 (0,50 frente a 0,41). En las últimas épocas, la exhaustividad y los dos mAP están prácticamente estabilizados.
 
-*Métricas de validación.* En las primeras épocas, el modelo de 1280 tiene una caída brusca: la precisión baja hasta cerca de 0,4 y el mAP@0.5 hasta cerca de 0,43. Después se recupera, y a partir de la época 20, aproximadamente, la precisión de los dos modelos está en torno a 0,85. Desde ahí sube lentamente hasta en torno a 0,88-0,90, con las dos curvas casi superpuestas. En cambio, la exhaustividad del modelo de 1280 queda por encima durante todo el entrenamiento y termina en torno a 0,80, frente a 0,72 del de 640. Lo mismo ocurre con el mAP@0.5 (en torno a 0,85 frente a 0,76) y el mAP@0.5:0.95 (en torno a 0,50 frente a 0,41). En las últimas épocas, la exhaustividad y los dos mAP están prácticamente estabilizados en los dos modelos.
-
-*Comparación entre resoluciones.* Las pérdidas no sirven para comparar los dos modelos, porque cada uno trabaja con imágenes y cajas de distinto tamaño. Por ejemplo, el modelo de 640 tiene menor pérdida DFL y menor pérdida de clasificación de val que el de 1280, pero peores métricas. La comparación se hace con las métricas, y muestran que las dos resoluciones tienen una precisión parecida (cometen una proporción parecida de falsas detecciones) y que la diferencia está en la exhaustividad. A 640, las matrículas pequeñas tienen tan pocos píxeles que el modelo no llega a detectarlas. En los dos modelos la precisión queda por encima de la exhaustividad, así que el error principal es no detectar matrículas, más que detectar cosas que no lo son. Por eso en el vídeo se usa el modelo de 1280.
+*Comparación entre resoluciones.* Las pérdidas no sirven para comparar los dos modelos, porque cada uno trabaja con imágenes y cajas de distinto tamaño: el de 640 tiene menor pérdida DFL y de clasificación de val, pero peores métricas. Las métricas muestran que las dos resoluciones cometen una proporción parecida de falsas detecciones, y que la diferencia está en la exhaustividad: a 640, las matrículas pequeñas tienen tan pocos píxeles que el modelo no llega a detectarlas.
 
 **Resultado de cada entrenamiento** (mejor época según mAP@0.5:0.95 en validación):
 
@@ -126,7 +122,7 @@ Aun así, ninguna métrica de validación empeora en esas épocas, así que el s
 | YOLO11n 640 | 120 | 108 | 0.76476 | 0.41982 | 
 | YOLO11n 1280 | 120 | 100 | 0.85974 | 0.50583 |
 
-Los dos modelos completaron las 120 épocas. Su mejor resultado en validación se alcanza cerca del final (época 108 en el de 640 y época 100 en el de 1280). A partir de ahí las métricas se mantienen estables, sin superar ese máximo y sin empeorar. El *early stopping* no llegó a activarse, porque necesita 20 épocas seguidas sin mejora y el entrenamiento terminó antes de que se cumplieran. El modelo que se guarda (`best.pt`) es el de esa mejor época. En validación, el modelo de 1280 supera al de 640 tanto en mAP@0.5 (0.860 frente a 0.765) como en mAP@0.5:0.95 (0.506 frente a 0.420).
+Los dos modelos completaron las 120 épocas, con su mejor resultado en validación cerca del final (época 108 en el de 640 y época 100 en el de 1280). El *early stopping* no llegó a activarse, porque necesita 20 épocas seguidas sin mejora y el entrenamiento terminó antes de que se cumplieran.
 
 ### Evaluación en test
 
@@ -151,9 +147,11 @@ Métricas calculadas con Ultralytics en validación y test (umbral de confianza 
 | F1 (conf = 0.35) | 0.857 | 0.855 |
 | Inferencia (ms/img) | 14.398 | 14.461 |
 
-TP (verdaderos positivos) son las matrículas detectadas correctamente, FP (falsos positivos) las detecciones donde no hay ninguna matrícula y FN (falsos negativos) las matrículas reales que el modelo no detecta. Las filas con "conf = 0.35" se calculan aceptando solo las detecciones con una confianza de al menos 0.35, el umbral de uso del modelo. El resto de métricas las calcula Ultralytics con el umbral que maximiza F1, salvo los mAP, que no dependen del umbral.
+TP (verdaderos positivos) son las matrículas detectadas correctamente, FP (falsos positivos) las detecciones sin matrícula y FN (falsos negativos) las matrículas no detectadas. Las filas con "conf = 0.35" usan el umbral de uso del modelo. El resto las calcula Ultralytics con el umbral que maximiza F1, salvo los mAP, que no dependen del umbral.
 
-Los resultados en validación y en test son muy parecidos: la mayor diferencia está en el mAP@0.5 (0.853 frente a 0.837) y en el mAP@0.5:0.95 (0.510 frente a 0.493), y con el umbral de 0.35 la exhaustividad es idéntica (0.834). Que test quede ligeramente por debajo es lo esperado. El conjunto de validación se usó para elegir la mejor época, es decir, el modelo final se seleccionó por ser el que mejor funcionaba en esas imágenes. Por eso su resultado en validación tiende a ser algo mayor que el que obtiene con imágenes nuevas. Las imágenes de test, en cambio, no han intervenido en el entrenamiento. Como la diferencia entre los dos conjuntos es pequeña, el modelo generaliza a imágenes que no ha visto, y los resultados de test representan cómo funcionará el detector en la práctica.
+Los valores de validación difieren ligeramente de los de la tabla de entrenamiento (por ejemplo, mAP@0.5 de 0.853 frente a 0.860), porque durante el entrenamiento Ultralytics evalúa en media precisión (FP16) y aquí en precisión completa.
+
+Los resultados en validación y test son muy parecidos: test queda ligeramente por debajo en mAP@0.5 (0.837 frente a 0.853) y mAP@0.5:0.95 (0.493 frente a 0.510), y con el umbral de 0.35 la exhaustividad es idéntica (0.834). Es lo esperado, porque la mejor época se eligió con validación, mientras que las imágenes de test no han intervenido en el entrenamiento. Como la diferencia es pequeña, el modelo generaliza a imágenes nuevas, y los resultados de test representan su comportamiento en la práctica.
 
 <div align="center">
 <img src="runs/matriculas_yolo11n_1280_min001_test_conf0.35/confusion_matrix.png" width="450" alt="Matriz de confusión en test">
@@ -189,9 +187,7 @@ De las 700 matrículas de test, el modelo detecta 584 (exhaustividad de 0.834). 
 | 40-80 px | 0.864 | 169 |
 | >80 px | 0.953 | 212 |
 
-La exhaustividad depende del tamaño de la matrícula. Las de menos de 20 px de ancho son el caso más difícil: el modelo solo detecta la mitad (0.520). A partir de 20 px la exhaustividad sube a 0.860, y con más de 80 px llega a 0.953. Las matrículas pequeñas son, por tanto, la principal causa de las matrículas no detectadas que se ven en la matriz de confusión y en la curva precisión-exhaustividad.
-
-Esto también explica la diferencia con el modelo de 640. Los tamaños de la tabla están medidos a la resolución de entrada del modelo (1280), así que a 640 cada matrícula mide la mitad de píxeles: las de 20 a 40 px pasarían a estar por debajo de 20 px, el grupo en el que el modelo falla más. Por eso entrenar y detectar a 1280 mejora sobre todo la exhaustividad.
+La exhaustividad depende del tamaño: el modelo solo detecta la mitad de las matrículas de menos de 20 px (0.520), frente a 0.860 a partir de 20 px y 0.953 por encima de 80 px. Las matrículas pequeñas son la principal causa de los FN de la matriz de confusión. Esto también explica la diferencia con el modelo de 640: los tamaños están medidos a 1280, así que a 640 las matrículas de 20 a 40 px pasarían a medir menos de 20 px, el grupo en el que el modelo más falla.
 
 #### Efecto de la resolución: YOLO11n a 640 frente a 1280
 
@@ -199,12 +195,106 @@ Métricas en test calculadas con el mismo código para los dos modelos (cada uno
 
 | Modelo | mAP@0.5 | mAP@0.5:0.95 | mejor F1 | conf óptima | precisión | exhaustividad | TP | FP | FN | ms/imagen |
 |---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n (640) | 0.734 | 0.403 | 0.794 | 0.308 | 0.854 | 0.743 | 520 | 89 | 180 | 9.315 |
-| YOLO11n (1280) | 0.838 | 0.496 | 0.839 | 0.366 | 0.866 | 0.814 | 570 | 88 | 130 | 18.526 |
+| YOLO11n (640) | 0.734 | 0.403 | 0.794 | 0.308 | 0.854 | 0.743 | 520 | 89 | 180 | 9.672 |
+| YOLO11n (1280) | 0.838 | 0.496 | 0.839 | 0.366 | 0.866 | 0.814 | 570 | 88 | 130 | 18.443 |
 
-Pasar de 640 a 1280 sube el mAP@0.5 de 0.734 a 0.838 y el mAP@0.5:0.95 de 0.403 a 0.496. La mejora viene sobre todo de la **exhaustividad**, que pasa de 0.743 a 0.814: el modelo de 1280 detecta 50 matrículas más (de 520 a 570 TP). En cambio, la precisión apenas cambia (0.854 frente a 0.866) y las falsas detecciones son prácticamente las mismas (89 frente a 88 FP). Esto coincide con lo que se veía en el entrenamiento y en la tabla por tamaños: más resolución sirve para encontrar las matrículas pequeñas, no para evitar falsos positivos. El coste es el **tiempo de inferencia**, que casi se duplica (de 9.315 a 18.526 ms por imagen).
+Pasar de 640 a 1280 sube el mAP@0.5 de 0.734 a 0.838. La mejora viene de la exhaustividad (0.743 → 0.814, 50 matrículas más detectadas), mientras que las falsas detecciones son prácticamente las mismas (89 frente a 88 FP). Coincide con lo visto en el entrenamiento y en la tabla por tamaños: más resolución sirve para encontrar las matrículas pequeñas, no para evitar falsos positivos. El coste es el tiempo, que casi se duplica (de 9.672 a 18.443 ms por imagen).
 
 En el vídeo se usa el modelo de **1280**, porque detecta más matrículas con la misma precisión. El tiempo extra sigue siendo bajo para procesar vídeo.
+
+
+### RT-DETR (tarea extra)
+
+RT-DETR es un detector basado en *transformers*. A diferencia de YOLO, predice directamente un conjunto fijo de cajas y no necesita eliminar detecciones duplicadas al final (NMS). Se ha usado la implementación oficial del [repositorio de RT-DETR](https://github.com/lyuwenyu/RT-DETR).
+
+#### Modelo elegido
+
+Se ha usado **RT-DETRv2 en su tamaño S**, cuyo *backbone* es una ResNet-18 (r18vd), partiendo de los pesos preentrenados en COCO que descarga [`load_rtdetr.py`](./load_rtdetr.py). Se eligió la versión v2 por ser la más reciente de las que incluye el repositorio, y el tamaño S por ser el más pequeño. Es el más cercano a YOLO11n y el que mejor se adapta a nuestra GPU de 6 GB. Aun así, tiene 21.854 millones de parámetros frente a los 2.605 millones de YOLO11n, unas 8 veces más, algo que hay que tener en cuenta al comparar los dos modelos.
+
+#### Configuración del entrenamiento
+
+La configuración está en [`configs_matriculas/rtdetrv2_r18vd_matriculas.yml`](./configs_matriculas/rtdetrv2_r18vd_matriculas.yml). Hereda la configuración oficial `rtdetrv2_r18vd_120e_coco.yml` y estas son las decisiones principales:
+
+- **Mismas condiciones que YOLO:** se parte de los pesos de COCO (*fine-tuning*), con las mismas imágenes y la misma división train/val/test, 120 épocas y 4 *workers*. El lote se reduce de 16 (valor oficial) a 8, para que quepa en los 6 GB de VRAM y sea el mismo que en YOLO. Las anotaciones se leen de los JSON en formato COCO generados por `yolo_a_coco.py`.
+- **Una sola clase** (`num_classes: 1`, `remap_mscoco_category: False`): el modelo solo detecta matrículas, y la clase se usa tal cual en lugar de convertirla a las clases de COCO.
+- **Calentamiento de 200 iteraciones** en lugar de 2000: con nuestro dataset, una época tiene unas 209 iteraciones (1670 imágenes / lote 8), así que el valor oficial supondría unas 10 épocas solo de calentamiento.
+- **Sin descargar los pesos de ImageNet del *backbone*** (`PResNet.pretrained: False`), porque ya vienen incluidos en los pesos de COCO.
+- **Precisión mixta** (`--use-amp`), para reducir la memoria y el tiempo de entrenamiento.
+
+El repositorio no tiene *early stopping*, así que entrena siempre las 120 épocas. El modelo final es `best.pth`, la época con mejor mAP@0.5:0.95 en validación.
+
+
+#### Análisis del entrenamiento de RT-DETR
+
+<div align="center">
+<img src="runs_rtdetr/rtdetrv2_r18_matriculas/curvas_entrenamiento.png" width="800" alt="Curvas de entrenamiento de RT-DETR">
+</div>
+
+El repositorio de RT-DETR no guarda la misma información que Ultralytics. En cada época solo registra las **pérdidas de entrenamiento** y las **métricas COCO en validación** ([`log.txt`](./runs_rtdetr/rtdetrv2_r18_matriculas/log.txt)). No calcula las pérdidas en validación ni la precisión, así que esas gráficas no se pueden generar. Obtenerlas habría exigido modificar el código del repositorio y volver a entrenar. Por eso se muestran las 6 gráficas equivalentes a las de YOLO:
+
+- **Pérdida de localización GIoU (train):** mide el solape entre la caja predicha y la real. Es la equivalente a box_loss de YOLO.
+- **Pérdida de clasificación VFL (train):** mide si el modelo asigna bien la confianza, teniendo en cuenta también lo bien ajustada que está la caja. Es la equivalente a cls_loss.
+- **Pérdida de regresión L1 (train):** diferencia entre las coordenadas de la caja predicha y la real. Ajusta la posición de la caja, igual que DFL en YOLO.
+- **Exhaustividad media AR@100 (val):** proporción de matrículas encontradas, como media de los umbrales de IoU de 0.5 a 0.95 y con un máximo de 100 detecciones por imagen. Es parecida a la exhaustividad de YOLO, pero no igual, porque la de YOLO usa solo IoU 0.5.
+- **mAP@0.5 y mAP@0.5:0.95 (val):** las mismas métricas que en YOLO.
+
+Como las funciones de pérdida son distintas a las de YOLO, sus valores no se pueden comparar entre los dos modelos, solo su evolución.
+
+**Análisis**
+
+*Pérdidas de entrenamiento.* La GIoU y la L1 bajan de golpe en las primeras 5 épocas y después siguen bajando lentamente hasta el final. La VFL, en cambio, sube al principio y luego baja lentamente con más oscilaciones. Esto es posible porque su objetivo depende de la calidad de cada caja: cuanto mejor se ajustan las cajas, más confianza se le exige al modelo. Las tres pérdidas tienen dos cambios bruscos: un salto en torno a la época 80, cuando el entrenamiento se interrumpió y se reanudó desde el último checkpoint, y una bajada en las 3 últimas épocas, cuando se desactivan los aumentos de datos más fuertes (`policy.epoch: 117`).
+
+*Métricas de validación.* Suben muy rápido en las primeras épocas y después lentamente, sin caer en ningún momento ni verse afectadas por la reanudación. Como el repositorio no calcula pérdidas en validación, el sobreajuste no se puede analizar como en YOLO, pero las métricas de validación no muestran ningún signo de que afecte a la detección.
+
+| Modelo | Épocas entrenadas | Mejor época | mAP@0.5 (val) | mAP@0.5:0.95 (val) |
+|---|---|---|---|---|
+| RT-DETR r18 640 | 120 | 120 | 0.865 | 0.509 |
+
+La mejor época es la última (120): las métricas de validación siguen subiendo hasta el final, también en las 3 últimas épocas. A diferencia de YOLO, cuyo mejor resultado se alcanzó antes (épocas 100 y 108), RT-DETR no llegó a estabilizarse del todo, así que es posible que con más épocas hubiera mejorado algo más.
+
+### Comparación entre YOLO y RT-DETR
+
+#### Entrenamiento
+
+<div align="center">
+<img src="runs_rtdetr/comparativa_entrenamiento_yolo_rtdetr.png" width="800" alt="mAP en validación durante el entrenamiento de YOLO y RT-DETR">
+</div>
+
+Solo se comparan el mAP@0.5 y el mAP@0.5:0.95 en validación, las únicas métricas que calculan los dos modelos. Aun así, cada uno las calcula con su propio código, así que los valores pueden diferir ligeramente.
+
+RT-DETR es el que más rápido aprende: hacia la época 10 ya alcanza un mAP@0.5 en torno a 0,74, porque su calentamiento dura menos de una época y parte de un detector de COCO más grande. Después, RT-DETR y YOLO a 1280 evolucionan de forma parecida y terminan prácticamente igual (en torno a 0,86 y 0,85 de mAP@0.5, y 0,51 y 0,50 de mAP@0.5:0.95). En cambio, YOLO a 640 queda por debajo durante todo el entrenamiento (en torno a 0,76 y 0,41), así que a la misma resolución RT-DETR obtiene un resultado mejor.
+
+La curva de RT-DETR es suave y la de YOLO oscila. Los dos validan con una media móvil de los pesos (EMA), pero RT-DETR los actualiza en cada lote y con una tasa de aprendizaje baja, así que el modelo apenas cambia entre épocas. YOLO acumula gradientes hasta un lote efectivo de 64 imágenes y usa aumentos de datos más agresivos, así que cada época cambia más el modelo. Estas oscilaciones se mantienen en un margen estrecho y con tendencia creciente, así que no indican ningún problema.
+
+#### Test
+
+<div align="center">
+<img src="runs_rtdetr/comparativa_test_yolo_rtdetr.png" width="800" alt="Curvas precisión-exhaustividad y F1-confianza en test">
+</div>
+
+Las métricas se calculan con el mismo código para los tres modelos (`RT-DETR.ipynb`), con cada modelo en su umbral de confianza óptimo (el máximo de F1):
+
+| Modelo | mAP@0.5 | mAP@0.5:0.95 | mejor F1 | conf óptima | precisión | exhaustividad | TP | FP | FN | ms/imagen | parámetros (M) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| YOLO11n (640) | 0.734 | 0.403 | 0.794 | 0.308 | 0.854 | 0.743 | 520 | 89 | 180 | 9.672 | 2.605 |
+| YOLO11n (1280) | 0.838 | 0.496 | 0.839 | 0.366 | 0.866 | 0.814 | 570 | 88 | 130 | 18.443 | 2.605 |
+| RT-DETR r18 (640) | 0.858 | 0.490 | 0.864 | 0.553 | 0.909 | 0.823 | 576 | 58 | 124 | 33.186 | 21.854 |
+
+El tiempo incluye todo el proceso de cada imagen (preparación, red y filtrado de detecciones), procesando las imágenes de una en una. Por eso es mayor que el tiempo de inferencia que da Ultralytics en la evaluación de YOLO, que solo mide la red y procesa las imágenes en lotes.
+
+**Análisis**
+
+El efecto de la resolución en YOLO ya se analizó en su evaluación, así que aquí nos centramos en RT-DETR.
+
+En **exhaustividad**, RT-DETR a 640 detecta casi las mismas matrículas que YOLO a 1280 (576 y 570 TP) y bastantes más que YOLO a 640 (520). Como las que YOLO pierde a 640 son sobre todo las pequeñas, esto indica que RT-DETR las detecta mejor sin necesitar más resolución. En **precisión**, RT-DETR es el mejor de los tres: 58 detecciones falsas frente a 88-89 de los dos YOLO (precisión de 0.909 frente a 0.866 y 0.854). YOLO genera muchas cajas candidatas y elimina las duplicadas al final (NMS), y algunas detecciones dudosas sobreviven a ese filtro, mientras que RT-DETR se entrena para predecir una sola caja por objeto. Por eso RT-DETR tiene el mayor mAP@0.5 (0.858). En cambio, en mAP@0.5:0.95, que exige cajas más ajustadas, YOLO a 1280 queda ligeramente por encima (0.496 frente a 0.490): con el doble de píxeles por matrícula, sus cajas se ajustan igual de bien o algo mejor.
+
+*Curvas.* En la curva precisión-exhaustividad, RT-DETR mantiene más precisión que los dos YOLO cuando la exhaustividad es alta, y llega a la misma exhaustividad máxima que YOLO a 1280. La curva F1-confianza de RT-DETR tiene una forma distinta. Con umbrales bajos su F1 es menor, porque siempre devuelve un número fijo de predicciones por imagen, la mayoría de confianza muy baja y sin matrícula. Con umbrales altos se mantiene en torno a 0,86 en un rango amplio (aproximadamente de 0,4 a 0,75), porque asigna una confianza alta a sus detecciones correctas. Por eso su umbral óptimo (0.553) es muy distinto del de YOLO, y a cambio es menos sensible a la elección exacta del umbral.
+
+*Coste.* RT-DETR tiene unas 8 veces más parámetros (21.854 M frente a 2.605 M) y tarda 33.186 ms por imagen, casi el doble que YOLO a 1280 (18.443 ms).
+
+**Conclusión**
+
+A la misma resolución, RT-DETR es el mejor detector. Frente a YOLO a 1280, su ventaja se reduce a 30 detecciones falsas menos, con la misma exhaustividad y un mAP@0.5:0.95 prácticamente igual. Teniendo en cuenta su coste, YOLO11n a 1280 ofrece un resultado casi igual siendo mucho más rápido y ligero. RT-DETR sería preferible si las detecciones falsas fueran especialmente costosas y el tiempo no fuera una limitación.
 
 ---
 
