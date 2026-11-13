@@ -61,36 +61,150 @@ El conjunto de datos, al cual se puede accede desde este [enlace](https://drive.
 | Partición | Imágenes | Matrículas | Porcentaje |
 |---|---|---|---|
 | Entrenamiento | 1670 | 3244 | 70% |
-| Validación | 358 | 721 | 15% |
+| Validación | 358 | 712 | 15% |
 | Test | 359 | 700 | 15% |
-| **Total** | **2387** | **4665** | 100% |
+| **Total** | **2387** | **4656** | 100% |
 
-**YOLO11n** se entrena directamente con anotaciones YOLO. RT-DETR (implementación de Baidu) necesita anotaciones en **formato COCO** para poder entrenar. La conversión se hace con el script [`yolo_to_coco.py`](./yolo_to_coco.py).
+**YOLO11n** se entrena directamente con anotaciones YOLO. RT-DETR (implementación de Baidu) necesita anotaciones en **formato COCO** para poder entrenar. La conversión se hace con el script [`yolo_a_coco.py`](./yolo_a_coco.py).
 
 ### Entrenamiento
 
-Para el entrenamiento de ambos modelos se han usado la misma configuracion:
-- EPOCHS = 120
-- BATCH = 8
-- WORKERS = 4
+| Parámetro | YOLO11n | Decisión y efecto |
+|---|---|---|
+| Modelo base | `yolo11n.pt` (preentrenado en COCO) | Se hace *fine-tuning*: el modelo ya sabe detectar objetos y solo aprende a detectar matrículas. |
+| Épocas | 120 | Máximo de épocas. |
+| *Early stopping* | 20 épocas (`PATIENCE`) | Si el mAP en validación no mejora en 20 épocas, se detiene el entrenamiento. |
+| Resolución (`IMGSZ`) | 1280 (y 640 para comparar) | Las matrículas ocupan una parte muy pequeña de la imagen. A más resolución, más píxeles tiene cada matrícula. |
+| Lote (`BATCH`) | 8 | Fijo para no superar los 6 GB de VRAM de la GPU a 1280. |
+| Semilla | 42 | La división train/val/test es siempre la misma. |
+| Pesos finales | `best.pt` | Se guarda la época con mejor resultado en validación, no la última. |
 
-Los resultados de los entrenamientos se pueden ver en [`results.csv`](./runs/matriculas_yolo11n_1280_min001/results.csv) para **YOLO11n** y [`log.txt`](./runs_rtdetr/rtdetrv2_r18_matriculas/log.txt) para **RT-DETR r18**
- 
-### Evaluación
+Otras decisiones sobre los datos:
+- **Se descartan las matrículas con un ancho menor al 1 % del de la imagen** (`MIN_ANCHO_REL = 0.01`): son ilegibles y enseñarían al modelo a buscar matrículas que ni siquiera se pueden leer.
+- **Las imágenes se guardan con el lado mayor reducido a 1280 px**, la resolución de entrenamiento. Así no se cargan imágenes más grandes de lo que el modelo va a usar.
 
-<div align=center>
-<img width="1390" height="490" alt="image" src="https://github.com/user-attachments/assets/aa6ffdb7-2c18-4e5f-a42a-9e84ba41fcfb" />
+Se entrenaron dos modelos YOLO11n con la misma configuración y solo distinta resolución: **1280** (el que se usa en el vídeo) y **640** (la misma resolución que RT-DETR, para que la comparación entre los dos sea justa).
 
+#### Análisis del entrenamiento de YOLO
 
-| Modelo | mAP@0.5 | F1 máx. (conf.) | Precisión | Exhaustividad | TP / FP / FN | ms/imagen |
-|---|---|---|---|---|---|---|
-| YOLO11n (1280) | 0.838 | 0.84 (0.37) | 0.87 | 0.81 | 570 / 88 / 130 | 19.1 |
-| RT-DETR r18 (640) | 0.858 | 0.86 (0.55) | 0.91 | 0.82 | 576 / 58 / 124 | 33.6 |
-
+<div align="center">
+<img src="runs/curvas_entrenamiento_yolo.png" width="800" alt="Curvas de entrenamiento de YOLO11n a 640 y 1280">
 </div>
 
+Cada fila de la figura muestra una variable: a la izquierda se calcula sobre las imágenes de entrenamiento (train) y a la derecha sobre las de validación (val), al final de cada época. Las cuatro últimas gráficas son las métricas en validación. La pérdida de clasificación de train está en escala logarítmica, porque su valor en la primera época es mucho mayor que el resto.
 
-**Conclusiones:** **RT-DETR r18** obtiene mejores resultados de detección (mAP@0.5 de 0.858 frente a 0.838 y F1 máximo de 0.86 frente a 0.84) y es más robusto a la elección del umbral de confianza.
+**Qué mide cada gráfica:**
+
+- **Pérdida de localización (box_loss):** cuánto se diferencian las cajas predichas de las reales, a partir de su solape (IoU). Cuanto más baja, mejor ajustadas están las cajas.
+- **Pérdida de clasificación (cls_loss):** cuánto se equivoca el modelo al decidir si en una zona hay una matrícula o es fondo, es decir, al asignar la confianza.
+- **Pérdida DFL (Distribution Focal Loss):** afina la posición exacta de cada borde de la caja. El modelo predice para cada borde una distribución de posibles posiciones, y esta pérdida es baja cuando esa distribución se concentra en la posición real.
+- **Precisión (val):** de todas las detecciones del modelo, qué proporción son matrículas reales. Ultralytics la calcula con el umbral de confianza que maximiza F1.
+- **Exhaustividad (val):** de todas las matrículas reales, qué proporción detecta el modelo. Se calcula con el mismo umbral que la precisión.
+- **mAP@0.5 (val):** área bajo la curva precisión-exhaustividad, contando una detección como correcta si su IoU con la caja real es al menos 0.5. Resume el detector con todos los umbrales de confianza a la vez.
+- **mAP@0.5:0.95 (val):** media del mAP con umbrales de IoU de 0.5 a 0.95. Exige cajas cada vez más ajustadas, así que además de si encuentra la matrícula, mide lo bien colocada que está la caja.
+
+En train, las pérdidas se calculan sobre imágenes con aumento de datos, y en val sobre imágenes sin modificar, que el modelo no usa para aprender. Comparar las dos permite detectar el **sobreajuste**: si la pérdida de train sigue bajando mientras la de val se estanca o sube, el modelo está aprendiendo detalles de las imágenes de entrenamiento que no le sirven para imágenes nuevas.
+
+**Análisis**
+
+*Pérdidas de entrenamiento.* Las tres pérdidas de train bajan en los dos modelos hasta la última época. En la pérdida de localización, la bajada se vuelve más pronunciada en las 10 últimas épocas, lo que coincide con que Ultralytics desactiva el aumento de datos por mosaico al final del entrenamiento (`close_mosaic: 10` en `args.yaml`). Las imágenes de entrenamiento se vuelven más sencillas y la pérdida baja. La pérdida de clasificación de train es muy alta en la primera época y cae de golpe en la segunda, en los dos modelos. La cabeza de clasificación se crea nueva al pasar de las 80 clases del dataset COCO (con el que se preentrenó `yolo11n.pt`) a una sola (matrícula) y aprende muy rápido a distinguir la matrícula del fondo. Desde la segunda época, las curvas de los dos modelos casi se superponen y bajan de forma continua.
+
+*Pérdidas de validación y sobreajuste.* La pérdida de clasificación de val baja hasta el final en los dos modelos. Las pérdidas de localización y DFL de val se comportan distinto según la resolución:
+- En el **modelo de 640**, bajan hasta la época 60 aproximadamente y después se mantienen planas hasta el final (en torno a 1,5 y 0,96).
+- En el **modelo de 1280**, alcanzan su mínimo entre las épocas 50 y 70 (en torno a 1,3 y 1,08) y después suben ligeramente (en torno a 1,35 y 1,10). Mientras tanto, las de train siguen bajando. Esto indica un **sobreajuste leve** en la localización de las cajas: el modelo aprende detalles de las imágenes de entrenamiento que no le sirven para imágenes nuevas.
+
+Aun así, ninguna métrica de validación empeora en esas épocas, así que el sobreajuste no llega a afectar a la detección. Además, como se guarda la época con mejor resultado en validación (`best.pt`), no se usa un modelo sobreajustado.
+
+*Métricas de validación.* En las primeras épocas, el modelo de 1280 tiene una caída brusca: la precisión baja hasta cerca de 0,4 y el mAP@0.5 hasta cerca de 0,43. Después se recupera, y a partir de la época 20, aproximadamente, la precisión de los dos modelos está en torno a 0,85. Desde ahí sube lentamente hasta en torno a 0,88-0,90, con las dos curvas casi superpuestas. En cambio, la exhaustividad del modelo de 1280 queda por encima durante todo el entrenamiento y termina en torno a 0,80, frente a 0,72 del de 640. Lo mismo ocurre con el mAP@0.5 (en torno a 0,85 frente a 0,76) y el mAP@0.5:0.95 (en torno a 0,50 frente a 0,41). En las últimas épocas, la exhaustividad y los dos mAP están prácticamente estabilizados en los dos modelos.
+
+*Comparación entre resoluciones.* Las pérdidas no sirven para comparar los dos modelos, porque cada uno trabaja con imágenes y cajas de distinto tamaño. Por ejemplo, el modelo de 640 tiene menor pérdida DFL y menor pérdida de clasificación de val que el de 1280, pero peores métricas. La comparación se hace con las métricas, y muestran que las dos resoluciones tienen una precisión parecida (cometen una proporción parecida de falsas detecciones) y que la diferencia está en la exhaustividad. A 640, las matrículas pequeñas tienen tan pocos píxeles que el modelo no llega a detectarlas. En los dos modelos la precisión queda por encima de la exhaustividad, así que el error principal es no detectar matrículas, más que detectar cosas que no lo son. Por eso en el vídeo se usa el modelo de 1280.
+
+**Resultado de cada entrenamiento** (mejor época según mAP@0.5:0.95 en validación):
+
+| Modelo | Épocas entrenadas | Mejor época | mAP@0.5 (val) | mAP@0.5:0.95 (val) |
+|---|---|---|---|---|
+| YOLO11n 640 | 120 | 108 | 0.76476 | 0.41982 | 
+| YOLO11n 1280 | 120 | 100 | 0.85974 | 0.50583 |
+
+Los dos modelos completaron las 120 épocas. Su mejor resultado en validación se alcanza cerca del final (época 108 en el de 640 y época 100 en el de 1280). A partir de ahí las métricas se mantienen estables, sin superar ese máximo y sin empeorar. El *early stopping* no llegó a activarse, porque necesita 20 épocas seguidas sin mejora y el entrenamiento terminó antes de que se cumplieran. El modelo que se guarda (`best.pt`) es el de esa mejor época. En validación, el modelo de 1280 supera al de 640 tanto en mAP@0.5 (0.860 frente a 0.765) como en mAP@0.5:0.95 (0.506 frente a 0.420).
+
+### Evaluación en test
+
+#### YOLO11n a 1280
+
+Métricas calculadas con Ultralytics en validación y test (umbral de confianza de uso: 0.35):
+
+| Métrica | Validación | Test |
+|---|---|---|
+| Imágenes | 358 | 359 |
+| Matrículas reales | 712 | 700 |
+| Precisión | 0.882 | 0.873 |
+| Exhaustividad (recall) | 0.803 | 0.806 |
+| F1 | 0.841 | 0.838 |
+| mAP@0.5 | 0.853 | 0.837 |
+| mAP@0.5:0.95 | 0.510 | 0.493 |
+| TP (conf = 0.35) | 594 | 584 |
+| FP (conf = 0.35) | 81 | 82 |
+| FN (conf = 0.35) | 118 | 116 |
+| Precisión (conf = 0.35) | 0.880 | 0.877 |
+| Exhaustividad (conf = 0.35) | 0.834 | 0.834 |
+| F1 (conf = 0.35) | 0.857 | 0.855 |
+| Inferencia (ms/img) | 14.398 | 14.461 |
+
+TP (verdaderos positivos) son las matrículas detectadas correctamente, FP (falsos positivos) las detecciones donde no hay ninguna matrícula y FN (falsos negativos) las matrículas reales que el modelo no detecta. Las filas con "conf = 0.35" se calculan aceptando solo las detecciones con una confianza de al menos 0.35, el umbral de uso del modelo. El resto de métricas las calcula Ultralytics con el umbral que maximiza F1, salvo los mAP, que no dependen del umbral.
+
+Los resultados en validación y en test son muy parecidos: la mayor diferencia está en el mAP@0.5 (0.853 frente a 0.837) y en el mAP@0.5:0.95 (0.510 frente a 0.493), y con el umbral de 0.35 la exhaustividad es idéntica (0.834). Que test quede ligeramente por debajo es lo esperado. El conjunto de validación se usó para elegir la mejor época, es decir, el modelo final se seleccionó por ser el que mejor funcionaba en esas imágenes. Por eso su resultado en validación tiende a ser algo mayor que el que obtiene con imágenes nuevas. Las imágenes de test, en cambio, no han intervenido en el entrenamiento. Como la diferencia entre los dos conjuntos es pequeña, el modelo generaliza a imágenes que no ha visto, y los resultados de test representan cómo funcionará el detector en la práctica.
+
+<div align="center">
+<img src="runs/matriculas_yolo11n_1280_min001_test_conf0.35/confusion_matrix.png" width="450" alt="Matriz de confusión en test">
+</div>
+
+La matriz de confusión muestra los resultados en test con el umbral de confianza de 0.35. Las filas indican lo que predijo el modelo (*Predicted*) y las columnas lo que había realmente en la imagen (*True*):
+
+- **584 (plate / plate):** matrículas que el modelo detectó correctamente (verdaderos positivos, TP).
+- **116 (background / plate):** matrículas reales que el modelo no detectó y tomó como fondo (falsos negativos, FN).
+- **82 (plate / background):** detecciones del modelo en zonas donde no había ninguna matrícula (falsos positivos, FP).
+- **Casilla vacía (background / background):** en detección no se cuentan los aciertos de fondo, porque el fondo es todo lo que no es una matrícula y no se puede contar como objetos.
+
+De las 700 matrículas de test, el modelo detecta 584 (exhaustividad de 0.834). De sus 666 detecciones, 584 son correctas (precisión de 0.877). Hay más matrículas sin detectar (116) que detecciones falsas (82), igual que en el entrenamiento, donde la precisión quedaba por encima de la exhaustividad: el error principal del modelo es no detectar matrículas.
+
+<div align="center">
+<img src="runs/matriculas_yolo11n_1280_min001_test/BoxPR_curve.png" width="450" alt="Curva precisión-exhaustividad en test">
+</div>
+
+**Curva precisión-exhaustividad.** Cada punto corresponde a un umbral de confianza: al bajarlo, el modelo detecta más matrículas (más exhaustividad) pero comete más errores (menos precisión). En nuestro modelo, la precisión se mantiene en torno a 0,9 hasta una exhaustividad de 0,8, es decir, las detecciones con confianza media y alta son casi siempre correctas. A partir de ahí la curva cae de golpe: para encontrar más matrículas habría que aceptar detecciones de confianza muy baja, en su mayoría falsas. La curva termina en una exhaustividad de en torno a 0,93, así que en torno al 7 % de las matrículas no se detectan con ningún umbral. El área bajo la curva es el mAP@0.5 en test: 0.837.
+
+<div align="center">
+<img src="runs/matriculas_yolo11n_1280_min001_test/BoxF1_curve.png" width="450" alt="Curva F1-confianza en test">
+</div>
+
+**Curva F1-confianza.** Muestra el F1 (equilibrio entre precisión y exhaustividad) para cada umbral. El máximo es **0.84 con un umbral de 0.373**, y la curva es bastante plana a su alrededor (F1 por encima de 0,8 entre umbrales de 0,2 y 0,55, aproximadamente), así que el resultado no depende mucho del umbral exacto. Con umbrales muy bajos el F1 baja por las detecciones falsas, y con umbrales por encima de 0,6 cae rápidamente porque el modelo descarta la mayoría de las matrículas. El umbral de uso, 0.35, está en la zona plana y muy cerca del máximo, lo que justifica haberlo elegido.
+
+**Exhaustividad según el tamaño de la matrícula** (ancho en píxeles a la resolución de entrada del modelo, en test, con conf = 0.35):
+
+| Tamaño | Exhaustividad | Matrículas |
+|---|---|---|
+| <20 px | 0.520 | 148 |
+| 20-40 px | 0.860 | 171 |
+| 40-80 px | 0.864 | 169 |
+| >80 px | 0.953 | 212 |
+
+La exhaustividad depende del tamaño de la matrícula. Las de menos de 20 px de ancho son el caso más difícil: el modelo solo detecta la mitad (0.520). A partir de 20 px la exhaustividad sube a 0.860, y con más de 80 px llega a 0.953. Las matrículas pequeñas son, por tanto, la principal causa de las matrículas no detectadas que se ven en la matriz de confusión y en la curva precisión-exhaustividad.
+
+Esto también explica la diferencia con el modelo de 640. Los tamaños de la tabla están medidos a la resolución de entrada del modelo (1280), así que a 640 cada matrícula mide la mitad de píxeles: las de 20 a 40 px pasarían a estar por debajo de 20 px, el grupo en el que el modelo falla más. Por eso entrenar y detectar a 1280 mejora sobre todo la exhaustividad.
+
+#### Efecto de la resolución: YOLO11n a 640 frente a 1280
+
+Métricas en test calculadas con el mismo código para los dos modelos (cada uno con su umbral de confianza óptimo):
+
+| Modelo | mAP@0.5 | mAP@0.5:0.95 | mejor F1 | conf óptima | precisión | exhaustividad | TP | FP | FN | ms/imagen |
+|---|---|---|---|---|---|---|---|---|---|---|
+| YOLO11n (640) | 0.734 | 0.403 | 0.794 | 0.308 | 0.854 | 0.743 | 520 | 89 | 180 | 9.315 |
+| YOLO11n (1280) | 0.838 | 0.496 | 0.839 | 0.366 | 0.866 | 0.814 | 570 | 88 | 130 | 18.526 |
+
+Pasar de 640 a 1280 sube el mAP@0.5 de 0.734 a 0.838 y el mAP@0.5:0.95 de 0.403 a 0.496. La mejora viene sobre todo de la **exhaustividad**, que pasa de 0.743 a 0.814: el modelo de 1280 detecta 50 matrículas más (de 520 a 570 TP). En cambio, la precisión apenas cambia (0.854 frente a 0.866) y las falsas detecciones son prácticamente las mismas (89 frente a 88 FP). Esto coincide con lo que se veía en el entrenamiento y en la tabla por tamaños: más resolución sirve para encontrar las matrículas pequeñas, no para evitar falsos positivos. El coste es el **tiempo de inferencia**, que casi se duplica (de 9.315 a 18.526 ms por imagen).
+
+En el vídeo se usa el modelo de **1280**, porque detecta más matrículas con la misma precisión. El tiempo extra sigue siendo bajo para procesar vídeo.
 
 ---
 
