@@ -7,16 +7,16 @@
 
 ---
 
-En esta práctica se aborda la detección y reconocimiento de matrículas, así como la detección de personas y vehículos mediante técnicas de visión por computador y aprendizaje profundo.
+En esta práctica se aborda la detección de personas y vehículos, así como la detección y reconocimiento de matrículas mediante técnicas de visión por computador y aprendizaje profundo.
 
-En primer lugar, se utiliza el modelo YOLO para la detección de personas y vehículos. Posteriormente, se entrena un modelo específico de YOLO para la detección de matrículas, cuyos resultados se emplean como base para desarrollar y evaluar diferentes métodos de reconocimiento de caracteres. En particular, se realiza una comparación entre los sistemas tradicionales de OCR (Optical Character Recognition) y los modelos VLM (Vision Language Models) para analizar su capacidad de lectura de matrículas.
+En primer lugar, se utiliza el modelo YOLO para la detección de personas y vehículos. Posteriormente, se entrena un modelo específico de YOLO para la detección de matrículas, cuyos resultados se emplean como base para evaluar diferentes métodos de reconocimiento de caracteres. En particular, se realiza una comparación entre los sistemas tradicionales de OCR (Optical Character Recognition) y los modelos VLM (Vision Language Models) para analizar su capacidad de lectura de matrículas.
 
 Además, se desarrolla un sistema de lectura automática de matrículas que integra la detección mediante YOLO con el reconocimiento de texto mediante OCR.
 
 Como ampliación del trabajo, se realizan dos tareas adicionales:
 
 - Detección con RT-DETR: se entrena un modelo basado en esta arquitectura para la detección de matrículas y se comparan sus resultados con los obtenidos mediante YOLO.
-- Anonimización de personas y matrículas: se implementa un sistema que aplica filtros sobre las regiones detectadas, permitiendo ocultar estos elementos en imágenes y vídeos.
+- Anonimización de personas y matrículas: se implementa un sistema que aplica filtros sobre las regiones detectadas, permitiendo ocultar estos elementos en el vídeo propuesto para la práctica.
 
 ---
 
@@ -28,6 +28,7 @@ Como ampliación del trabajo, se realizan dos tareas adicionales:
 4. [Resultados](#4-resultados)
 5. [Anonimización de personas y matrículas](#5-anonimización-de-personas-y-matrículas)
 6. [Especificaciones del equipo](#6-especificaciones-del-equipo)
+7. [Referencias y recursos externos](#7-referencias-y-recursos-externos)
 
 ---
 
@@ -43,10 +44,10 @@ Para mejorar el comportamiento del tracker ante estas situaciones, se utiliza un
 
 - **Persistencia de los identificadores (track_buffer=300)**: aumenta el número de fotogramas durante los que se conserva un seguimiento perdido antes de eliminarlo. Esto permite recuperar identificadores cuando un vehículo queda oculto temporalmente.
 - **Asociación de detecciones (match_thresh=0.85)**: establece el umbral utilizado durante el proceso de asociación entre detecciones y seguimientos existentes.
-- **Compensación del movimiento de cámara (gmc_method=sparseOptFlow)**: utiliza flujo óptico disperso para estimar y compensar los movimientos de la cámara, mejorando la asociación de objetos entre fotogramas.
 - **Reidentificación por apariencia (with_reid=True)**: habilita el uso de características visuales para ayudar a identificar objetos que han desaparecido temporalmente de la imagen.
 - **Umbral de similitud de apariencia (appearance_thresh=0.25)**: establece el nivel de similitud requerido para considerar que dos detecciones corresponden al mismo objeto.
 - **Umbral de proximidad (proximity_thresh=0.5)**: controla la proximidad espacial necesaria para considerar la información de apariencia durante la asociación.
+
 Además, se utiliza **model=auto** para aprovechar las características extraídas por el propio modelo YOLO durante la reidentificación, evitando cargar un modelo externo adicional.
 
 ---
@@ -56,7 +57,8 @@ Además, se utiliza **model=auto** para aprovechar las características extraíd
 En esta sección se aborda el entrenamiento de modelos específicos para la detección de matrículas. Para ello, se utilizan dos arquitecturas diferentes, **YOLO** y **RT-DETR**, con el objetivo de comparar su rendimiento en esta tarea.
 
 ### Conjunto de datos
-El conjunto de datos, al cual se puede acceder desde este [enlace](https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI) contiene **2418 imágenes** recopiladas una a una con matrículas etiquetadas manualmente en formato **YOLO**. Para el entrenamiento, se han utilizado 2387 imágenes ya que cuando se comenzó con el entrenamiento no estaban todas las imágenes disponibles, este dataset se dividió en:
+
+El conjunto de datos, disponible a través de este [enlace](https://drive.google.com/drive/folders/1RFd6sKH_QMQcpE_w5rWmy8rKiYUY5_SI), está compuesto por **2418 imágenes**, recopiladas individualmente y con las matrículas correspondientes etiquetadas manualmente en formato **YOLO**. No obstante, para el entrenamiento se emplearon **2387 imágenes**, ya que, en el momento de iniciar dicho proceso, el conjunto de datos aún no estaba completo. Finalmente, el *dataset* utilizado para el entrenamiento se dividió en las siguientes particiones:
 
 | Partición | Imágenes | Matrículas | Porcentaje |
 |---|---|---|---|
@@ -65,11 +67,11 @@ El conjunto de datos, al cual se puede acceder desde este [enlace](https://drive
 | Test | 359 | 700 | 15% |
 | **Total** | **2387** | **4656** | 100% |
 
-**YOLO11n** se entrena directamente con anotaciones YOLO. RT-DETR (implementación de Baidu) necesita anotaciones en **formato COCO** para poder entrenar. La conversión se hace con el script [`yolo_a_coco.py`](./yolo_a_coco.py).
+**YOLO11n** se entrena directamente con anotaciones YOLO, mientras que RT-DETR (implementación de Baidu) necesita anotaciones en **formato COCO** para poder entrenar. Esta conversión se hace usando el script [`yolo_a_coco.py`](./yolo_a_coco.py).
 
 ### Entrenamiento
 
-El entrenamiento y la evaluación de YOLO están en [`Entrenamiento_YOLO.ipynb`](./Entrenamiento_YOLO.ipynb).
+El entrenamiento y la evaluación de **YOLO** están en [`Entrenamiento_YOLO.ipynb`](./Entrenamiento_YOLO.ipynb).
 
 | Parámetro | YOLO11n | Decisión y efecto |
 |---|---|---|
@@ -217,7 +219,7 @@ Se ha usado **RT-DETRv2 en su tamaño S**, cuyo *backbone* es una ResNet-18 (r18
 
 La configuración está en [`configs_matriculas/rtdetrv2_r18vd_matriculas.yml`](./configs_matriculas/rtdetrv2_r18vd_matriculas.yml). Hereda la configuración oficial `rtdetrv2_r18vd_120e_coco.yml` y estas son las decisiones principales:
 
-- **Mismas condiciones que YOLO:** se parte de los pesos de COCO (*fine-tuning*), con las mismas imágenes y la misma división train/val/test, 120 épocas y 4 *workers*. El lote se reduce de 16 (valor oficial) a 8, para que quepa en los 6 GB de VRAM y sea el mismo que en YOLO. Las anotaciones se leen de los JSON en formato COCO generados por `yolo_a_coco.py`.
+- **Mismas condiciones que YOLO:** se parte de los pesos de COCO (*fine-tuning*), con las mismas imágenes y la misma división train/val/test, 120 épocas y 4 *workers*. El lote se reduce de 16 (valor oficial) a 8, para que quepa en los 6 GB de VRAM y sea el mismo que en YOLO. Las anotaciones se leen de los JSON en formato COCO generados por [`yolo_a_coco.py`](./yolo_a_coco.py).
 - **Una sola clase** (`num_classes: 1`, `remap_mscoco_category: False`): el modelo solo detecta matrículas, y la clase se usa tal cual en lugar de convertirla a las clases de COCO.
 - **Calentamiento de 200 iteraciones** en lugar de 2000: con nuestro dataset, una época tiene unas 209 iteraciones (1670 imágenes / lote 8), así que el valor oficial supondría unas 10 épocas solo de calentamiento.
 - **Sin descargar los pesos de ImageNet del *backbone*** (`PResNet.pretrained: False`), porque ya vienen incluidos en los pesos de COCO.
@@ -301,7 +303,7 @@ A la misma resolución, RT-DETR es el mejor detector. Frente a YOLO a 1280, su v
 
 ## 3. Reconocimiento de matrículas
 
-En esta sección se lleva acabo la lectura de matrículas haciendo uso de OCR y VLM. Para ello se realiza la comparación tres modelos: **EasyOCR**, **PaddleOCR** y **SmolVLM** evaluando las mismas matrículas recortadas del dataset (a partir de las cajas anotadas). El código y detalles de la comparación se encuentra en el archivo [`OCR_vs_VLM`](./OCR_vs_VLM.ipynb).
+En esta sección se lleva acabo la lectura de matrículas haciendo uso de OCR y VLM. Para ello se realiza la comparación tres modelos: **EasyOCR**, **PaddleOCR** y **SmolVLM** evaluando las mismas matrículas recortadas del dataset (a partir de las cajas anotadas). El código y detalles de la comparación se encuentra en el archivo [`OCR_vs_VLM.ipynb`](./OCR_vs_VLM.ipynb).
 
 ### Resultados
 
@@ -327,9 +329,9 @@ Métricas:
 
 **PaddleOCR es el mejor en todas las columnas:** tiene la mayor tasa de acierto (0.898) y precisión de caracteres (0.931), la menor sin lectura (0.055) y el menor tiempo (14.730 ms de mediana). Estos resultado concuerdan con el modelo, ya que se trata de un OCR especializado en leer texto en imágenes, exactamente la tarea propuesta.
 
-EasyOCR es casi igual de rápido que PaddleOCR, pero mucho menos preciso con menor tasa de acierto (0.553). Gran parte de sus fallos vienen de matrículas sin lectura (0.240): en una de cada cuatro matrículas no devuelve una matrícula válida. Si le falta o le sobra un solo carácter, el texto ya no encaja con el formato de matrícula y se descarta. En cuanto a SmolVLM, queda en medio en precisión con una tasa de acierto de 0.727, pero su precisión de caracteres (0.850) es bastante mayor. Esto indica que muchos de sus fallos son de pocos caracteres. Su gran problema es el tiempo: 571.460 ms de mediana frente a unos 15 ms de los OCR. Tiene sentido, porque un VLM es un modelo de lenguaje mucho más grande que genera la respuesta token a token. Además, su tiempo medio (810.030 ms) es mucho mayor que su mediana, así que algunas lecturas tardan bastante más que el resto.
+**EasyOCR** es casi igual de rápido que PaddleOCR, pero mucho menos preciso con menor tasa de acierto (0.553). Gran parte de sus fallos vienen de matrículas sin lectura (0.240): en una de cada cuatro matrículas no devuelve una matrícula válida. Si le falta o le sobra un solo carácter, el texto ya no encaja con el formato de matrícula y se descarta. En cuanto a **SmolVLM**, queda en medio en precisión con una tasa de acierto de 0.727, pero su precisión de caracteres (0.850) es bastante mayor. Esto indica que muchos de sus fallos son de pocos caracteres. Su gran problema es el tiempo: 571.460 ms de mediana frente a unos 15 ms de los OCR. Tiene sentido, porque un VLM es un modelo de lenguaje mucho más grande que genera la respuesta token a token. Además, su tiempo medio (810.030 ms) es mucho mayor que su mediana, así que algunas lecturas tardan bastante más que el resto.
 
-En conclusión **PaddleOCR** es la mejor opción para en el vídeo de la práctica, debido a su gran precisión y rápidez. SmolVLM tiene la ventaja de no necesitar un modelo específico, pero con 1.235 matrículas por segundo no es viable para procesar vídeo y mucho menos si lo quisiéramos utilizar en una detección en tiempo real. Para la tarea concreta como leer matrículas, un OCR especializado es más eficiente.
+En conclusión **PaddleOCR** es la mejor opción para el vídeo de la práctica, debido a su gran precisión y rápidez. SmolVLM tiene la ventaja de no necesitar un modelo específico, pero con 1.235 matrículas por segundo no es viable para procesar un vídeo y mucho menos si lo quisiéramos utilizar en una detección en tiempo real. Para la tarea concreta como leer matrículas, un OCR especializado es más eficiente.
 
 ---
 
@@ -350,9 +352,7 @@ El vídeo se procesa fotograma a fotograma en [`VC_P4.ipynb`](./VC_P4.ipynb):
   <em>Haz clic en la imagen para ver el vídeo de demostración.</em>
 </p>
 
-Los resultados se guardan en [`detecciones.csv`](./detecciones.csv), con una fila por cada objeto detectado en cada fotograma y estas columnas:
-
-fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula
+Los resultados se guardan en [`detecciones.csv`](./detecciones.csv), con una fila por cada objeto detectado en cada fotograma y las siguientes columnas: `fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula`
 
 El número de objetos de cada clase se obtiene contando los identificadores distintos que asigna el tracker:
 
@@ -369,7 +369,7 @@ El número de objetos de cada clase se obtiene contando los identificadores dist
 
 ## 5. Anonimización de personas y matrículas
 
-Como parte de la tarea extra, se ha implementado un sistema de anonimización de personas y matrículas mediante un efecto de pixelado intenso. A partir de las detecciones realizadas por el modelo YOLO, se obtiene la región de interés (ROI) correspondiente a la caja delimitadora (bounding box) de cada elemento detectado. Posteriormente, se reduce su resolución mediante cv2.resize() y se vuelve a escalar a su tamaño original utilizando la interpolación cv2.INTER_NEAREST, generando así el efecto de pixelado. Finalmente, la región anonimizada se integra de nuevo en el fotograma original. El código de esta tarea se puede encontrar en el apartado *Extra: Anonimizar personas y vehículos* del [`VC_P4.ipynb`](./VC_P4.ipynb).
+Como parte de la tarea extra, se ha implementado un sistema de anonimización de personas y matrículas mediante un efecto de pixelado intenso. A partir de las detecciones realizadas por el modelo de YOLO, se obtiene la región de interés (ROI) correspondiente a la caja delimitadora (bounding box) de cada elemento detectado. Posteriormente, se reduce su resolución mediante `cv2.resize()` y se vuelve a escalar a su tamaño original utilizando la interpolación `cv2.INTER_NEAREST`, generando así el efecto de pixelado. Finalmente, la región anonimizada se integra de nuevo en el fotograma original. El código de esta tarea se puede encontrar en el apartado *Extra: Anonimizar personas y vehículos* del [`VC_P4.ipynb`](./VC_P4.ipynb).
 
 <p align="center">
   <a href="https://drive.google.com/file/d/1KXbaEPX6dSREo9uKQ1JAsiv1tJC540z1/view?usp=sharing">
@@ -391,6 +391,12 @@ Como parte de la tarea extra, se ha implementado un sistema de anonimización de
 | GPU | NVIDIA GeForce RTX 3050 (6.4 GB VRAM) |
 | Python | 3.9.25 |
 | PyTorch | 2.5.1+cu121 |
+
+---
+
+## 7. Referencias y recursos externos
+
+Para la realización de esta práctica se han utilizado algunos recursos proporcionados en el repositorio de la asignatura: [VC – Práctica 4](https://github.com/otsedom/otsedom.github.io/tree/main/VC/P4).
 
 ---
 

@@ -1,9 +1,8 @@
 # custom_botsort.yaml
-# BoT-SORT con re-identificación por aspecto: conserva el ID de los coches tapados temporalmente
 
 tracker_type: botsort
 
-# Umbrales de detección (mismos que en custom_bytetrack.yaml)
+# Umbrales de detección
 track_high_thresh: 0.50
 track_low_thresh: 0.10
 new_track_thresh: 0.60
