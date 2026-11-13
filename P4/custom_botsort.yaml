@@ -15,8 +15,8 @@ track_buffer: 300
 match_thresh: 0.85
 fuse_score: True
 
-# Compensación del movimiento de cámara
-gmc_method: sparseOptFlow
+# Compensación del movimiento de la cámara
+gmc_method: none
 
 # Re-identificación por aspecto
 proximity_thresh: 0.5      # solape mínimo para considerar el aspecto al emparejar
