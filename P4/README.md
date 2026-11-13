@@ -334,6 +334,16 @@ En conclusión **PaddleOCR** es la mejor opción para en el vídeo de la prácti
 
 ## 4. Resultados
 Cada ejecución sobre el vídeo genera una nueva fila en un **CSV**.
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1CBm8d97C9uk3vcQ3UD7TkJbtchpKZw0z/view?usp=drive_link">
+    <img width="816" height="457" alt="image" src="https://github.com/user-attachments/assets/294c3e1c-a33d-4e76-963c-9c4a0713c796" />
+  </a>
+  <br>
+  <em>Haz clic en la imagen para ver el vídeo de demostración.</em>
+</p>
+
+
 `fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula`
 | Objeto | Total |
 |:---|:---|
