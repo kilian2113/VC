@@ -69,6 +69,8 @@ El conjunto de datos, al cual se puede acceder desde este [enlace](https://drive
 
 ### Entrenamiento
 
+El entrenamiento y la evaluación de YOLO están en [`Entrenamiento_YOLO.ipynb`](./Entrenamiento_YOLO.ipynb).
+
 | Parámetro | YOLO11n | Decisión y efecto |
 |---|---|---|
 | Modelo base | `yolo11n.pt` (preentrenado en COCO) | Se hace *fine-tuning*: el modelo ya sabe detectar objetos y solo aprende a detectar matrículas. |
@@ -221,8 +223,7 @@ La configuración está en [`configs_matriculas/rtdetrv2_r18vd_matriculas.yml`](
 - **Sin descargar los pesos de ImageNet del *backbone*** (`PResNet.pretrained: False`), porque ya vienen incluidos en los pesos de COCO.
 - **Precisión mixta** (`--use-amp`), para reducir la memoria y el tiempo de entrenamiento.
 
-El repositorio no tiene *early stopping*, así que entrena siempre las 120 épocas. El modelo final es `best.pth`, la época con mejor mAP@0.5:0.95 en validación.
-
+El repositorio no tiene *early stopping*, así que entrena siempre las 120 épocas. Los pesos entrenados (`best.pth`) no están en el repositorio porque superan el límite de 100 MB de GitHub. Se pueden descargar desde este [enlace](https://drive.google.com/file/d/1jTYK-iaJYLwn_d8NYBSUyiTf_g1WBSIx/view?usp=sharing) y deben colocarse en `runs_rtdetr/rtdetrv2_r18_matriculas/best.pth` para ejecutar la comparación sin volver a entrenar.
 
 #### Análisis del entrenamiento de RT-DETR
 
@@ -272,7 +273,7 @@ La curva de RT-DETR es suave y la de YOLO oscila. Los dos validan con una media 
 <img src="runs_rtdetr/comparativa_test_yolo_rtdetr.png" width="800" alt="Curvas precisión-exhaustividad y F1-confianza en test">
 </div>
 
-Las métricas se calculan con el mismo código para los tres modelos (`RT-DETR.ipynb`), con cada modelo en su umbral de confianza óptimo (el máximo de F1):
+Las métricas se calculan con el mismo código para los tres modelos ([`RT-DETR.ipynb`](./RT-DETR.ipynb)), con cada modelo en su umbral de confianza óptimo (el máximo de F1):
 
 | Modelo | mAP@0.5 | mAP@0.5:0.95 | mejor F1 | conf óptima | precisión | exhaustividad | TP | FP | FN | ms/imagen | parámetros (M) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -333,25 +334,36 @@ En conclusión **PaddleOCR** es la mejor opción para en el vídeo de la prácti
 ---
 
 ## 4. Resultados
-Cada ejecución sobre el vídeo genera una nueva fila en un **CSV**.
+
+El vídeo se procesa fotograma a fotograma en [`VC_P4.ipynb`](./VC_P4.ipynb):
+
+1. **Personas y vehículos:** YOLO11n (COCO) los detecta y BoT-SORT les asigna un identificador que se mantiene entre fotogramas (apartado 1).
+2. **Matrículas:** nuestro detector YOLO11n a 1280 (apartado 2) busca las matrículas en el fotograma, y cada una se asigna al vehículo más pequeño que la contiene.
+3. **Lectura:** PaddleOCR lee el texto de cada matrícula (apartado 3). Como una misma matrícula se lee en muchos fotogramas, el texto de cada vehículo se decide por votación entre todas sus lecturas.
+
 
 <p align="center">
-  <a href="https://drive.google.com/file/d/1CBm8d97C9uk3vcQ3UD7TkJbtchpKZw0z/view?usp=drive_link">
+  <a href="https://drive.google.com/file/d/1CBm8d97C9uk3vcQ3UD7TkJbtchpKZw0z/view?usp=sharing">
     <img width="816" height="457" alt="image" src="https://github.com/user-attachments/assets/294c3e1c-a33d-4e76-963c-9c4a0713c796" />
   </a>
   <br>
   <em>Haz clic en la imagen para ver el vídeo de demostración.</em>
 </p>
 
+Los resultados se guardan en [`detecciones.csv`](./detecciones.csv), con una fila por cada objeto detectado en cada fotograma y estas columnas:
 
-`fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula`
+fotograma, tipo_objeto, confianza, identificador_tracking, x1, y1, x2, y2, matrícula_en_su_caso, confianza, mx1,my1,mx2,my2, texto_matricula
+
+El número de objetos de cada clase se obtiene contando los identificadores distintos que asigna el tracker:
+
 | Objeto | Total |
 |:---|:---|
-| Bicicleta | 2 |
-| Bus | 2 |
+| Persona | 20 |
 | Coche | 64 |
 | Moto | 6 |
-| Perona | 20 |
+| Autobús | 2 |
+| Camión | 3 |
+| Bicicleta | 2 |
 
 ---
 
@@ -408,5 +420,3 @@ Como parte de la tarea extra, se ha implementado un sistema de anonimización de
     </td>
   </tr>
 </table>
-
-<div align="center">
