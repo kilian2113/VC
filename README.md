@@ -73,8 +73,8 @@ Aquí se recopilan los diferentes trabajos y ejercicios realizados durante el cu
   | [Práctica 2](./P2) | Detección de bordes | ![Closed](https://img.shields.io/badge/CLOSED-da3633?style=flat-square) |
   | [Práctica 3](./P3) | Detección de contornos | ![Closed](https://img.shields.io/badge/CLOSED-da3633?style=flat-square) |
   | [Práctica 4](./P4) | Detección de vehículos y personas | ![Closed](https://img.shields.io/badge/CLOSED-da3633?style=flat-square) |
-  | [Práctica 5](./P4) | Detección de caras | ![Open](https://img.shields.io/badge/OPEN-2da44e?style=flat-square) |
-  | [Trabajo Final](./P4) | Trabajo de curso | ![Open](https://img.shields.io/badge/OPEN-2da44e?style=flat-square) |
+  | [Práctica 5](./P5) | Biometría | ![Open](https://img.shields.io/badge/OPEN-2da44e?style=flat-square) |
+  | [Trabajo Final](./Trabajo-final) | Trabajo de curso | ![Open](https://img.shields.io/badge/OPEN-2da44e?style=flat-square) |
 </div>
 
 <div align="center">
