@@ -12,6 +12,14 @@
 
 ---
 
+## Referencias y recursos externos
+
+Para la realización de esta práctica se han utilizado:
+- https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker 
+- https://www.kdef.se/
+
+---
+
 
 <div align="center">
 

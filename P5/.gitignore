@@ -1,0 +1,23 @@
+# --- Python / Jupyter ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- Datos derivados de KDEF ---
+# La licencia de KDEF no permite redistribuir el material, y el índice
+# guarda rutas locales de cada ordenador. Se regeneran con el notebook.
+datos/
+
+# --- KDEF original, por si se copia dentro del proyecto ---
+KDEF/
+KDEF_and_AKDEF/
+AKDEF/
+
+# --- Fotos propias de prueba (privacidad) ---
+fotos_propias/
+
+# --- Sistema y editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
