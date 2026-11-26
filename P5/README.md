@@ -2,38 +2,72 @@
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![OpenCV](https://img.shields.io/badge/OpenCV-Image%20Processing-5C3EE8?style=flat-square)
-
----
-
+![Mediapipe](https://img.shields.io/badge/MediaPipe-Face%20Detection-5C3EE8?style=flat-square&logo=google&logoColor=white)
 
 ---
 
 ## Índice
 
-1. [Tarea 1](#1-detección-de-personas-y-vehículos-con-yolo)
-2. [Tarea 2. ¿Qué Windows eres?](#Tarea-2.-¿Qué-Windows-eres?)
+1. [Tarea 1. Simón dice emociones](#tarea-1-simón-dice-emociones)
+   - [Entrenamiento](#entrenamiento)
+   - [Filtro](#filtro)
+2. [Tarea 2. ¿Qué Windows eres?](#tarea-2-qué-windows-eres)
+3. [Creación del entorno](#creación-del-entorno)
+4. [Referencias y recursos externos](#referencias-y-recursos-externos)
 
 ---
 
-## Tarea 1
+## Tarea 1. Simón dice emociones
+
+### Entrenamiento
+
+*completar*
+
+### Filtro
+
+*completar*
 
 ---
 
 ## Tarea 2. ¿Qué Windows eres?
 
-Esta tarea consiste en el desarrollo un filtro interactivo basado en el reconocimiento facial, cuyo objetivo es colocar diferentes imágenes representativas de las versiones de Windows sobre el rostro de una persona en tiempo real. Al detectar una cara, se inicia una ruleta que va mostrando aleatoriamente las distintas versiones de Windows hasta seleccionar una de ellas al azar. Una vez realizada la selección, la imagen correspondiente queda colocada sobre el rostro y se reproduce su sonido característico de dicha versión de Windows.
+Esta tarea consiste en desarrollar un filtro interactivo basado en el reconocimiento facial, que superpone diferentes imágenes representativas de las versiones de Windows sobre el rostro detectado en tiempo real. Cuando se detecta una cara, se inicia una ruleta que muestra aleatoriamente las distintas versiones de Windows hasta seleccionar una de ellas. Una vez finalizada la selección, la imagen correspondiente se coloca sobre el rostro y se reproduce el sonido característico de dicha versión.
 
-Para el reconocimiento facial se hace uso de MediaPipe, concretamente utilizando su herramienta Face Mesh. Esta tecnología permite detectar una gran cantidad de puntos de referencia (landmarks) distribuidos por el rostro. A partir de estos puntos se calcula la posición y las dimensiones de la cara, obteniendo un rectángulo que permite conocer su ubicación dentro de la imagen capturada por la cámara.
+Para implementar el reconocimiento facial se utiliza MediaPipe, concretamente su herramienta **Face Mesh**, que permite detectar numerosos puntos de referencia (landmarks) distribuidos por el rostro. A partir de estos puntos se calcula la posición y las dimensiones de la cara, delimitándola mediante un rectángulo que permite determinar su ubicación dentro de la imagen capturada por la cámara.
 
-Una vez localizada la cara, se utiliza OpenCV para procesar la imagen de la cámara y colocar sobre la frente de la persona la imagen de la versión de Windows seleccionada. Para ello, se calcula el tamaño que debe tener la imagen en función de las dimensiones del rostro, manteniendo sus proporciones y adaptando su posición para que quede correctamente situada. También se tiene en cuenta el canal alfa de las imágenes, permitiendo conservar la transparencia de los archivos PNG y conseguir una superposición más limpia.
+Una vez localizada la cara, se emplea OpenCV para procesar los fotogramas de la cámara y superponer sobre la frente de la persona la imagen de la versión de Windows seleccionada. Para ello, se calcula el tamaño adecuado de la imagen en función de las dimensiones del rostro, manteniendo sus proporciones originales y ajustando su posición para conseguir una superposición correcta. Además, se tiene en cuenta el canal alfa de las imágenes, lo que permite conservar la transparencia de los archivos PNG y obtener una integración visual más limpia.
 
-Para evitar que la ruleta se reinicie constantemente mientras la cara permanece delante de la cámara, se controla la detección facial y las posibles ausencias del rostro. De esta forma, la selección comienza cuando se detecta una cara y se mantiene el resultado hasta que la persona deja de aparecer durante varios fotogramas.
+Para evitar que la ruleta se reinicie continuamente mientras el rostro permanece frente a la cámara, se implementa un control sobre la detección facial y las posibles ausencias del rostro. De esta manera, la selección se inicia al detectar una cara y el resultado se mantiene hasta que esta deja de detectarse durante un número determinado de fotogramas.
 
-La selección de la versión de Windows se realiza de forma aleatoria durante un intervalo de tiempo determinado por la variable `DURACION_RULETA`. Cuando termina este intervalo, se establece una versión ganadora y se muestra su imagen sobre el rostro. Cada versión tiene asociado un archivo de audio que reproduce su sonido característico mediante *Pygame*. La relación entre imágenes y sonidos se realiza utilizando el mismo nombre de archivo.
+La selección de la versión de Windows se realiza de forma aleatoria durante un intervalo de tiempo establecido mediante la variable `DURACION_RULETA`. Una vez transcurrido este intervalo, se selecciona aleatoriamente una de las versiones disponibles y se muestra su imagen sobre el rostro. Cada versión tiene asociado un archivo de audio con su sonido característico, cuya reproducción se gestiona mediante *Pygame*. La asociación entre imágenes y sonidos se realiza utilizando el mismo nombre de archivo para ambos recursos.
 
-Para desarrollar la práctica también se han empleado módulos como Random, OS, Glob y Time para gestionar la selección aleatoria, los archivos y los tiempos de funcionamiento.
+Adicionalmente se han añadido dos opciones de teclado:
 
-Los recursos del filtro se encuentran organizados en dos carpetas: [`fotos`](./fotos), donde se almacenan las imágenes de las diferentes versiones de Windows, y [`audios`](./audios), donde se guardan sus respectivos sonidos en formato WAV. Para asociar correctamente cada imagen con su sonido, ambos archivos deben compartir el mismo nombre.
+  - **Tecla 'r'**: reinicia la ruleta y permite realizar una nueva selección.
+  - **Tecla 'f'**: activa la visualización de los landmarks detectados en el rostro mediante la función `dibujar_landmarks()`
+
+Para el desarrollo del filtro también se utilizan otros módulos de Python, como **Random**, **OS**, **Glob** y **Time**, que permiten gestionar, respectivamente, la selección aleatoria, el acceso y la organización de archivos, la búsqueda de recursos y el control de los tiempos de ejecución.
+
+
+Los recursos necesarios para el funcionamiento del filtro se encuentran organizados en dos carpetas: [`fotos`](./fotos), que contiene las imágenes de las diferentes versiones de Windows, y [`audios`](./audios), donde se almacenan sus respectivos sonidos en formato WAV. Para garantizar la correcta asociación entre ambos recursos, cada imagen debe tener un archivo de audio con el mismo nombre.
+
+Por último, todo el código correspondiente al desarrollo e implementación del filtro se encuentra en el archivo [`VC_P5.ipynb`](./VC_P5.ipynb).
+
+---
+
+## Creación del entorno
+
+Para ejecutar la práctica, es necesario crear un entorno virtual de Conda con Python 3.11 e instalar las dependencias utilizadas.
+
+```bash
+conda create -n enviroment python=3.11 -y
+conda activate enviroment
+python -m pip install pandas
+python -m pip install torch
+python -m pip install mediapipe==0.10.21
+python -m pip install opencv-python pygame ipykernel
+python -m ipykernel install --user --name enviroment --display-name "enviroment"
+```
 
 ---
 
@@ -42,6 +76,7 @@ Los recursos del filtro se encuentran organizados en dos carpetas: [`fotos`](./f
 Para la realización de esta práctica se han utilizado:
 - https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker 
 - https://www.kdef.se/
+- https://www.youtube.com/watch?v=Bwm4tZ4fjyk&t=6s
 
 ---
 
