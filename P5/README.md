@@ -6,6 +6,10 @@
 
 ---
 
+Esta práctica consiste en la detección y el análisis facial mediante *landmarks* (puntos faciales). Se divide en dos tareas: en la primera, se entrena un modelo para detectar emociones a partir de características faciales, con el objetivo de desarrollar un pequeño juego; en la segunda, se utiliza un modelo preentrenado para crear un filtro basado en el reconocimiento facial.
+
+---
+
 ## Índice
 
 1. [Tarea 1. Simón dice emociones](#tarea-1-simón-dice-emociones)
@@ -22,7 +26,7 @@
 
 Esta tarea consiste en un juego de "Simón dice" controlado con la expresión facial. El juego da órdenes del tipo *"Simón dice: cara de alegría"* y el jugador debe poner esa cara; si la orden no empieza por "Simón dice", el jugador no debe hacerla. Para reconocer la emoción se ha entrenado un modelo propio con el conjunto de datos KDEF, que recibe los puntos de referencia (landmarks) faciales obtenidos con MediaPipe y clasifica la expresión en siete emociones: alegría, tristeza, enfado, sorpresa, miedo, asco y neutral.
 
-El trabajo se divide en dos cuadernos: `Entrenamiento.ipynb`, con la preparación de los datos, el entrenamiento y la evaluación del modelo, y `Filtro_con_entrenamiento.ipynb`, con el juego. El código que comparten ambos (extracción y normalización de los landmarks y la definición de la red) está en la carpeta `utilidades/`, para garantizar que los datos se preparan exactamente igual al entrenar y al jugar.
+El trabajo se divide en dos cuadernos: [`Entrenamiento.ipynb`](./Entrenamiento.ipynb), con la preparación de los datos, el entrenamiento y la evaluación del modelo, y [`Filtro_con_entrenamiento.ipynb`](./Filtro_con_entrenamiento.ipynb), con el juego. El código que comparten ambos (extracción y normalización de los landmarks y la definición de la red) está en la carpeta [`utilidades/`](./utilidades), para garantizar que los datos se preparan exactamente igual al entrenar y al jugar.
 
 ### Entrenamiento
 
@@ -38,7 +42,7 @@ Sus principales limitaciones son el número reducido de personas, la ausencia de
 
 #### Preparación de los datos
 
-La limpieza se realiza con `utilidades/preparar_dataset.py`, que interpreta el nombre de cada imagen (sesión, sexo, número de actor, emoción y ángulo) y genera un índice en CSV sin modificar los archivos originales. 
+La limpieza se realiza con [`utilidades/preparar_dataset.py`](./utilidades/preparar_dataset.py), que interpreta el nombre de cada imagen (sesión, sexo, número de actor, emoción y ángulo) y genera un índice en CSV sin modificar los archivos originales. 
 
 Primero se descartan los perfiles completos, ya que con la cámara web la cara se ve casi siempre de frente, y se conservan las vistas frontales y los semiperfiles: 2.940 imágenes. También se descartan 2 imágenes cuyo nombre no sigue la codificación de KDEF, por lo que no se conoce su etiqueta, y 4 semiperfiles en los que MediaPipe no detecta la cara. El resultado son **2.934 caras**, con entre 418 y 420 por emoción.
 
@@ -156,7 +160,7 @@ Las confusiones principales son **miedo con sorpresa** (35 % de los miedos se cl
 
 #### Pruebas con la cámara web
 
-Como el objetivo final es el juego, también se probó el modelo con la cámara web en condiciones reales: con y sin gafas, con luz natural, artificial y tenue. La prueba guiada de `Filtro_con_entrenamiento.ipynb` pide cada emoción por turnos, la mide durante 3 segundos y guarda el porcentaje de fotogramas acertados en `pruebas_webcam/resultados_webcam.csv`. En total se realizaron 21 pruebas con 6 personas de dos rangos de edad: tres de entre 19 y 25 años (personas 1, 4 y 5) y tres de entre 50 y 55 años (personas 2, 3 y 6).
+Como el objetivo final es el juego, también se probó el modelo con la cámara web en condiciones reales: con y sin gafas, con luz natural, artificial y tenue. La prueba guiada de [`Filtro_con_entrenamiento.ipynb`](./Filtro_con_entrenamiento.ipynb) pide cada emoción por turnos, la mide durante 3 segundos y guarda el porcentaje de fotogramas acertados en [`pruebas_webcam/resultados_webcam.csv`](./pruebas_webcam/resultados_webcam.csv). En total se realizaron 21 pruebas con 6 personas de dos rangos de edad: tres de entre 19 y 25 años (personas 1, 4 y 5) y tres de entre 50 y 55 años (personas 2, 3 y 6).
 
 | Emoción | Acierto medio |
 |---|---|
@@ -185,7 +189,7 @@ Estas pruebas son preliminares: el número de personas es reducido, y en algunas
 
 ### Filtro
 
-El juego se encuentra en `Filtro_con_entrenamiento.ipynb`. Al empezar, el jugador mantiene la cara neutra durante 3 segundos para calibrar el juego: la media de esos fotogramas se guarda como su cara neutra de referencia. Antes de cada orden, el juego espera a que vuelva a poner cara neutra, para que ninguna orden empiece con la expresión de la anterior. Después se elige una emoción al azar, que en el 70 % de los casos va precedida de "Simón dice" y en el 30 % es una trampa. El resultado de cada ronda se indica iluminando el borde de la pantalla en verde o en rojo, y el jugador tiene 3 vidas.
+El juego se encuentra en [`Filtro_con_entrenamiento.ipynb`](./Filtro_con_entrenamiento.ipynb). Al empezar, el jugador mantiene la cara neutra durante 3 segundos para calibrar el juego: la media de esos fotogramas se guarda como su cara neutra de referencia. Antes de cada orden, el juego espera a que vuelva a poner cara neutra, para que ninguna orden empiece con la expresión de la anterior. Después se elige una emoción al azar, que en el 70 % de los casos va precedida de "Simón dice" y en el 30 % es una trampa. El resultado de cada ronda se indica iluminando el borde de la pantalla en verde o en rojo, y el jugador tiene 3 vidas.
 
 En cada fotograma se detecta la cara con MediaPipe, se normalizan los landmarks igual que en el entrenamiento y el modelo devuelve la probabilidad de cada emoción. Para que un fotograma erróneo no afecte al juego, se promedian las probabilidades de los últimos 10 fotogramas.
 
@@ -222,7 +226,7 @@ https://github.com/user-attachments/assets/a88d460c-6c27-4a3e-8566-c63c962f2395
 
 ## Tarea 2. ¿Qué Windows eres?
 
-Esta tarea consiste en desarrollar un filtro interactivo basado en el reconocimiento facial, que superpone diferentes imágenes representativas de las versiones de Windows sobre el rostro detectado en tiempo real. Cuando se detecta una cara, se inicia una ruleta que muestra aleatoriamente las distintas versiones de Windows hasta seleccionar una de ellas. Una vez finalizada la selección, la imagen correspondiente se coloca sobre el rostro y se reproduce el sonido característico de dicha versión.
+Esta tarea consiste en el desarrollo de un filtro interactivo basado en el reconocimiento facial, que superpone diferentes imágenes representativas de las versiones de Windows sobre el rostro detectado en tiempo real. Cuando se detecta una cara, se inicia una ruleta que muestra aleatoriamente las distintas versiones de Windows hasta seleccionar una de ellas. Una vez finalizada la selección, la imagen correspondiente se coloca sobre el rostro y se reproduce el sonido característico de dicha versión.
 
 Para implementar el reconocimiento facial se utiliza MediaPipe, concretamente su herramienta **Face Mesh**, que permite detectar numerosos puntos de referencia (landmarks) distribuidos por el rostro. A partir de estos puntos se calcula la posición y las dimensiones de la cara, delimitándola mediante un rectángulo que permite determinar su ubicación dentro de la imagen capturada por la cámara.
 
@@ -239,9 +243,9 @@ Adicionalmente se han añadido dos opciones de teclado:
 
 Para el desarrollo del filtro también se utilizan otros módulos de Python, como **Random**, **OS**, **Glob** y **Time**, que permiten gestionar, respectivamente, la selección aleatoria, el acceso y la organización de archivos, la búsqueda de recursos y el control de los tiempos de ejecución.
 
-Los recursos necesarios para el funcionamiento del filtro se encuentran organizados en dos carpetas: [`fotos`](./fotos), que contiene las imágenes de las diferentes versiones de Windows, y [`audios`](./audios), donde se almacenan sus respectivos sonidos en formato WAV. Para garantizar la correcta asociación entre ambos recursos, cada imagen debe tener un archivo de audio con el mismo nombre.
+Los recursos necesarios para el funcionamiento del filtro se encuentran organizados en dos carpetas: [`fotos/`](./fotos), que contiene las imágenes de las diferentes versiones de Windows, y [`audios/`](./audios), donde se almacenan sus respectivos sonidos en formato WAV. Para garantizar la correcta asociación entre ambos recursos, cada imagen debe tener un archivo de audio con el mismo nombre.
 
-Por último, todo el código correspondiente al desarrollo e implementación del filtro se encuentra en el archivo [`VC_P5.ipynb`](./VC_P5.ipynb).
+Por último, todo el código correspondiente al desarrollo e implementación del filtro se encuentra en el archivo [`Windows_filter.ipynb`](./Windows_filter.ipynb).
 
 <div aling="center">
 
