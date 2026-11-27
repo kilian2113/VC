@@ -278,7 +278,7 @@ Para la realización de esta práctica se han utilizado:
 - https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker 
 - https://www.kdef.se/
 - https://www.youtube.com/watch?v=Bwm4tZ4fjyk&t=6s
-
+- Asistente de IA utilizado como apoyo en la búsqueda y elección del conjunto de datos, en el desarrollo y en la redacción de este README.
 ---
 
 
