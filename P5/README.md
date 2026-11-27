@@ -203,6 +203,14 @@ Los umbrales de trampa son más altos para que un gesto involuntario o un error 
 
 Si aparecen varias personas en la imagen, el juego usa la cara más cercana a la cámara y la marca con un recuadro, y si no se detecta ninguna cara, el juego se pausa para que apartarse de la cámara no sirva para superar una trampa. El juego es de un solo jugador y, como la calibración depende de la persona, debe repetirse al cambiar de jugador.
 
+<div aling="center">
+   
+
+https://github.com/user-attachments/assets/a88d460c-6c27-4a3e-8566-c63c962f2395
+
+
+</div>
+
 #### Controles
 
   - Tecla `C`: repite la calibración de la cara neutra.
@@ -226,14 +234,22 @@ La selección de la versión de Windows se realiza de forma aleatoria durante un
 
 Adicionalmente se han añadido dos opciones de teclado:
 
-  - **Tecla 'r'**: reinicia la ruleta y permite realizar una nueva selección.
-  - **Tecla 'f'**: activa la visualización de los landmarks detectados en el rostro mediante la función `dibujar_landmarks()`.
+  - Tecla `r`: reinicia la ruleta y permite realizar una nueva selección.
+  - Tecla `f`: activa la visualización de los landmarks detectados en el rostro mediante la función `dibujar_landmarks()`.
 
 Para el desarrollo del filtro también se utilizan otros módulos de Python, como **Random**, **OS**, **Glob** y **Time**, que permiten gestionar, respectivamente, la selección aleatoria, el acceso y la organización de archivos, la búsqueda de recursos y el control de los tiempos de ejecución.
 
 Los recursos necesarios para el funcionamiento del filtro se encuentran organizados en dos carpetas: [`fotos`](./fotos), que contiene las imágenes de las diferentes versiones de Windows, y [`audios`](./audios), donde se almacenan sus respectivos sonidos en formato WAV. Para garantizar la correcta asociación entre ambos recursos, cada imagen debe tener un archivo de audio con el mismo nombre.
 
 Por último, todo el código correspondiente al desarrollo e implementación del filtro se encuentra en el archivo [`VC_P5.ipynb`](./VC_P5.ipynb).
+
+<div aling="center">
+
+
+https://github.com/user-attachments/assets/55a488fd-95b0-461c-a7c5-c23ce7a8c93c
+
+
+</div>
 
 ---
 
